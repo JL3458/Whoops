@@ -1,3 +1,4 @@
+
 function adminQuizInfo(authUserId,quizId) {
     return {
         quizId: 1,
@@ -8,3 +9,15 @@ function adminQuizInfo(authUserId,quizId) {
           
     }
 }
+function adminQuizCreate( authUserId, name, description ) {
+    return {
+        quizId: 2
+    }
+}
+
+function adminQuizRemove(authUserId, quizId) {
+    return {
+    }
+}
+
+
