@@ -38,3 +38,4 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 
 function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
     return {}
+}
