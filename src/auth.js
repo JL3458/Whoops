@@ -9,7 +9,7 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
     }
     for (let i in data.users) {
         if (data.users[i].email === email) {
-            return {error: 'Email not found'};
+            return {error: 'Email Already Exists'};
         }
     }
     const pattern = /^[a-zA-Z\s\-']+$/;
@@ -43,17 +43,25 @@ function adminAuthLogin( email, password ) {
 }
 
 function adminUserDetails(authUserId) {
-    return {
-        user:
-            {
-              userId: 1,
-              name: 'Hayden Smith',
-              email: 'hayden.smith@unsw.edu.au',
-              numSuccessfulLogins: 3,
-              numFailedPasswordsSinceLastLogin: 1,
-            }
+    let data = getData();
+    const user = data.users.find((user) => user.userId === authUserId);
+    if (!user) {
+        return { error: 'Invalid User'};
     }
-}
+    return {
+        user 
+    };
+     // user:
+        //     {
+        //       userId: 1,
+        //       name: 'Hayden Smith',
+        //       email: 'hayden.smith@unsw.edu.au',
+        //       numSuccessfulLogins: 3,
+        //       numFailedPasswordsSinceLastLogin: 1,
+        //     }
+};
+
+export {adminUserDetails}
 
 /*console.log(adminAuthRegister('validemail@gmail.com', 'password123', 'pedri', 'gonzalez'));
 console.log(adminAuthRegister('validemail1@gmail.com', 'PASSword1', 'pedri', 'gonzalez'));

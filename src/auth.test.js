@@ -1,7 +1,27 @@
+
 import {adminAuthRegister} from './auth';
 import {clear} from './other.js';
+import {adminUserDetails} from './auth';
 
 const ERROR = { error: expect.any(String) };
+beforeAll(() => {
+    clear();
+})
+
+describe('userDetails', () => {
+    test ('Invalid UserId', () => {
+        expect(adminUserDetails(1135123)).toEqual(ERROR);
+        expect(adminUserDetails(123)).toEqual(ERROR);
+        expect(adminUserDetails(3459872)).toEqual(ERROR);
+        expect(adminUserDetails(83745)).toEqual(ERROR);
+    });
+    test ('Invalid Syntax', () => {
+        expect(adminUserDetails('9834ndfgi')).toEqual(ERROR);
+        expect(adminUserDetails('dfbno283')).toEqual(ERROR);
+        expect(adminUserDetails('Thisinstanumber')).toEqual(ERROR);
+        expect(adminUserDetails('whowrotethis???')).toEqual(ERROR);
+    })
+});
 
 describe('authRegister', () => {
     test('Invalid Email', () => {
@@ -40,6 +60,7 @@ describe('authRegister', () => {
     });
 
     test('Testing with Clear', () => {
+        expect(clear()).toEqual({});
         expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({authUserId: expect.any(Number)});
         expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
         expect(adminAuthRegister('ValidEmail3@mail.com', 'password123', 'Lewa', 'Gonlez')).toEqual({authUserId: expect.any(Number)});
