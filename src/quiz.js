@@ -1,12 +1,16 @@
+import {getData, setData} from './dataStore.js';
+
 function adminQuizList(authUserId) {
-    return { 
-        quizzes: [
-            {
-            quizId: 1,
-            name: 'My Quiz',
-            }
-        ]
+    let data = getData();
+    const user = data.users.find((user) => user.userId === authUserId);
+    if (!user) {
+        return { error: 'Invalid User'};
     }
+    const quizzes = data.quizzes.map(
+        (quiz) => ({ quizId: quiz.quizId, name: quiz.name }));
+    return { 
+        quizzes
+    };
 }
 
 
@@ -39,3 +43,5 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
     return {}
 }
+
+export {adminQuizList}
