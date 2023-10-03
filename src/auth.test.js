@@ -1,4 +1,5 @@
 import {adminAuthRegister} from './auth';
+import {clear} from './other.js';
 
 const ERROR = { error: expect.any(String) };
 
@@ -36,5 +37,16 @@ describe('authRegister', () => {
         expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Sanchez', 'Gonzalez')).toEqual(ERROR);
         expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual(ERROR);
         expect(adminAuthRegister('ValidEmail4@mail.com', 'password123', 'Kounde', 'Araujo')).toEqual({authUserId: expect.any(Number)});
+    });
+
+    test('Testing with Clear', () => {
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthRegister('ValidEmail3@mail.com', 'password123', 'Lewa', 'Gonlez')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Sanchez', 'Gonzalez')).toEqual(ERROR);
+        expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual(ERROR);
+        expect(clear()).toEqual({});
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
     });
   });
