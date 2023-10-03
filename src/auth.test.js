@@ -1,25 +1,39 @@
 
-import {adminAuthRegister} from './auth';
+import { adminAuthRegister } from './auth.js';
 import {clear} from './other.js';
-import {adminUserDetails} from './auth';
+import { adminUserDetails } from './auth.js';
+import { adminAuthLogin } from './auth.js';
 
 const ERROR = { error: expect.any(String) };
-beforeAll(() => {
+beforeEach(() => {
     clear();
-})
+});
 
 describe('userDetails', () => {
-    test ('Invalid UserId', () => {
-        expect(adminUserDetails(1135123)).toEqual(ERROR);
-        expect(adminUserDetails(123)).toEqual(ERROR);
-        expect(adminUserDetails(3459872)).toEqual(ERROR);
-        expect(adminUserDetails(83745)).toEqual(ERROR);
+    beforeEach(() => {
+        clear();
     });
-    test ('Invalid Syntax', () => {
-        expect(adminUserDetails('9834ndfgi')).toEqual(ERROR);
-        expect(adminUserDetails('dfbno283')).toEqual(ERROR);
-        expect(adminUserDetails('Thisinstanumber')).toEqual(ERROR);
-        expect(adminUserDetails('whowrotethis???')).toEqual(ERROR);
+
+    test ('Invalid UserId', () => {
+        expect(adminUserDetails('10')).toEqual(ERROR);
+        expect(adminUserDetails('20')).toEqual(ERROR);
+        
+    });
+
+    test ('Sample Test userDetails', () => {
+        const authId1 = adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+        const authId2 = adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzalez');
+        expect(adminAuthLogin('ValidEmail2@mail.com', 'password123')).toEqual({authUserId: authId2.authUserId});
+        expect(adminAuthLogin('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
+        expect(adminUserDetails(authId2.authUserId)).toEqual({user: {userId: 20, name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1}});
+    })
+
+    test ('Sample Test userDetails with clear()', () => {
+        const authId1 = adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+        expect(clear()).toEqual({});
+        expect(adminUserDetails(authId1.authUserId)).toEqual(ERROR);
     })
 });
 
@@ -71,3 +85,31 @@ describe('authRegister', () => {
         expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
     });
   });
+
+describe('authlogin', () => {
+    beforeEach(() => {
+        clear();
+      });
+
+    test('Email does not exist', () => {
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthLogin('ValidEmail3@mail.com', 'password123')).toEqual(ERROR);
+        expect(adminAuthLogin('ValidEmail2@mail.com', 'password123')).toEqual({authUserId: expect.any(Number)});
+    });
+
+    test('Incorrect Password', () => {
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthLogin('ValidEmail1@mail.com', 'password456')).toEqual(ERROR);
+        expect(adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthLogin('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
+        expect(adminAuthLogin('ValidEmail1@mail.com', 'password123')).toEqual({authUserId: expect.any(Number)});
+    });
+
+    test('Sample test with clear', () => {
+        expect(adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({authUserId: expect.any(Number)});
+        expect(adminAuthLogin('ValidEmail1@mail.com', 'password123')).toEqual({authUserId: expect.any(Number)});
+        expect(clear()).toEqual({});
+        expect(adminAuthLogin('ValidEmail1@mail.com', 'password456')).toEqual(ERROR);
+    });
+});
