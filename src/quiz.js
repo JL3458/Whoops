@@ -17,7 +17,7 @@ function adminQuizCreate(authUserId, name, description) {
     let data = getData();
 
     // Case 1 - AuthUserId is not a valid user
-    if (data.users.find((user) => user.userId === authUserId) === undefined)
+    if (data.users.find((user) => user.userId === authUserId) === undefined || authUserId === 0)
     {
         return {error: 'AuthUserId is not a valid user'};
     }  
@@ -67,6 +67,35 @@ function adminQuizCreate(authUserId, name, description) {
 }
 
 function adminQuizRemove(authUserId, quizId) {
+   
+    let data = getData();
+
+    // Case 1 - AuthUserId is not a valid user
+    if (data.users.find((user) => user.userId === authUserId) === undefined || authUserId === 0)
+    {
+        return {error: 'AuthUserId is not a valid user'};
+    } 
+
+    let tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+    // Case 2 - QuizId does not refer to valid quiz
+    if (tempQuiz === undefined || tempQuiz.quizId === 100)
+    {
+        return {error: 'quizId is not of a valid quiz'};
+    } 
+
+    // Case 2 - QuizId belongs to the current logged in user
+    if (tempQuiz !== undefined && tempQuiz.userId !== authUserId)
+    {
+        return {error: 'quizId does not refer to a quiz that this user owns'};
+    } 
+
+    // Remove a quiz from data
+    let quizIndex = data.quizzes.findIndex((quiz) => quiz.quizId == quizId);
+    data.quizzes.splice(quizIndex, 1);
+
+    setData(data);
+   
     return {
     }
 }
@@ -89,7 +118,6 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
     return {}
 }
-
 
 ///////////////////////////////
 
