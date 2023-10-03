@@ -28,7 +28,7 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
     const arrayindex = data.users.length;
     const Id = data.users[arrayindex - 1].userId + 10;
 
-    data.users.push({userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 0, numFailedPasswordsSinceLastLogin: 0});
+    data.users.push({userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0});
     setData(data);
 
     return {
@@ -37,34 +37,51 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
 }
 
 function adminAuthLogin( email, password ) {
+    let data = getData();
+    let found = 0;
+    let index = 0;
+    for (let i in data.users) {
+        if (data.users[i].email === email) {
+            ++found;
+            index = i;
+        }
+    }
+    if (found === 0) {
+        return {error: 'Email does not exist'};
+    }
+    if (data.users[index].password !== password) {
+        data.users[index].numFailedPasswordsSinceLastLogin = data.users[index].numFailedPasswordsSinceLastLogin + 1;
+        return {error: 'Incorrect Password'};
+    }
+    data.users[index].numFailedPasswordsSinceLastLogin = 0;
+    data.users[index].numSuccessfulLogins = data.users[index].numSuccessfulLogins + 1;
+    
     return {
-        authUserId: 1
+        authUserId: data.users[index].userId
     }
 }
 
 function adminUserDetails(authUserId) {
     let data = getData();
-    const user = data.users.find((user) => user.userId === authUserId);
-    if (!user) {
-        return { error: 'Invalid User'};
+    const Id = authUserId;
+    let userindex = data.users.find(({ userId }) => userId === Id);
+    if (userindex === undefined || Id === 0) {
+        return {error: 'Invalid Entry'};
     }
+
+    let fullname = userindex.nameFirst + ' ' + userindex.nameLast;
+
     return {
-        user 
+        user: {
+            userId: Id,
+            name: fullname,
+            email: userindex.email,
+            numSuccessfulLogins: userindex.numSuccessfulLogins,
+            numFailedPasswordsSinceLastLogin: userindex.numFailedPasswordsSinceLastLogin,
+        } 
     };
-     // user:
-        //     {
-        //       userId: 1,
-        //       name: 'Hayden Smith',
-        //       email: 'hayden.smith@unsw.edu.au',
-        //       numSuccessfulLogins: 3,
-        //       numFailedPasswordsSinceLastLogin: 1,
-        //     }
 };
 
-export {adminUserDetails}
-
-/*console.log(adminAuthRegister('validemail@gmail.com', 'password123', 'pedri', 'gonzalez'));
-console.log(adminAuthRegister('validemail1@gmail.com', 'PASSword1', 'pedri', 'gonzalez'));
-console.log(getData());*/
-
 export {adminAuthRegister} 
+export {adminUserDetails}
+export {adminAuthLogin}
