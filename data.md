@@ -1,7 +1,7 @@
 ```javascript
 let data = {
     // TODO: Add more fields after discussion
-    user: [
+    users: [
         {
             userId: 1,
             email: 'haydensmith@gmail.com',
@@ -13,13 +13,14 @@ let data = {
         }
     ],
 
-    quiz: [
+    quizzes: [
         {
             quizId: 1,
             name: 'Animals',
             description: 'A quiz about Animals',
             timeCreated: 1683125870,
             timeLastEdited: 1683125871,
+            userId: 1
         }
     ],
 };
