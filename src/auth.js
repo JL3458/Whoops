@@ -9,7 +9,7 @@ function adminAuthRegister( email, password, nameFirst, nameLast ) {
     }
     for (let i in data.users) {
         if (data.users[i].email === email) {
-            return {error: 'Email not found'};
+            return {error: 'Email Already Exists'};
         }
     }
     const pattern = /^[a-zA-Z\s\-']+$/;
