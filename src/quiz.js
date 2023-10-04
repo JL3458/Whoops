@@ -114,7 +114,11 @@ function adminQuizInfo(authUserId,quizId) {
     }
     // Returns quiz
     return {
-        quiz
+        quizId: quiz.quizId,
+        name: quiz.name,
+        timeCreated: quiz.timeCreated,
+        timeLastEdited: quiz.timeLastEdited,
+        description: quiz.description
     }
 }
 
@@ -167,5 +171,9 @@ function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
 }
 
 ///////////////////////////////
+
+console.log(adminAuthRegister('valid@gmail.com', 'password123', 'ansh', 'shervin'));
+console.log(adminQuizCreate(10, 'test quiz', 'ssvfsdfvsdv'));
+console.log(adminQuizInfo(10, 110));
 
 export {adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate};
