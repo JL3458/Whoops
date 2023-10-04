@@ -1,5 +1,6 @@
 import {getData, setData} from './dataStore.js';
 import {adminAuthRegister} from './auth.js';
+import { clear } from './other.js';
 
 function adminQuizList(authUserId) {
     let data = getData();
@@ -66,8 +67,8 @@ function adminQuizCreate(authUserId, name, description) {
         quizId: quizIdGenerator,
         name: name,
         description: description,
-        timeCreated: Date.now()/1000,
-        timeLastEdited: Date.now()/1000,
+        timeCreated: Math.floor(Date.now()/1000),
+        timeLastEdited: Math.floor(Date.now()/1000),
         userId: authUserId
     };
 
@@ -174,7 +175,7 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 
     // Update the quiz name
     quiz.name = name;
-    quiz.timeLastEdited = Date.now()/1000
+    quiz.timeLastEdited = Math.floor(Date.now()/1000);
     setData(data);
     
 
@@ -182,12 +183,51 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 }
 
 function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
-    return {}
+    let data = getData();
+    if (data.users.find(item => item.userId === authUserId) === undefined || authUserId === 0) {
+        return { error: "authUserId does not exist" };
+    }
+    if (data.quizzes.find(item => item.quizId === quizId) === undefined || quizId === 100) {
+        return { error: "quizId does not exist" };
+    }
+    if ((/^.{101,}$/.test(description))) {
+        return { error: "description is not valid"};
+    }
+    const quizToUpdate = data.quizzes.find(item => item.quizId === quizId);
+
+    if (quizToUpdate !== undefined && quizToUpdate.userId !== authUserId) {
+        return {error: 'quizId does not refer to a quiz that this user owns'};
+    } 
+
+    if (quizToUpdate) {
+        quizToUpdate.description = description;
+        quizToUpdate.timeLastEdited = Math.floor(Date.now()/1000)
+    }
+    return { };
 }
-
 ///////////////////////////////
+//////Debugging code///////////
+
+/*let data = getData()
+clear();
+console.log(adminAuthRegister('tomcruise@gmail.com','eight12345','Firstname', 'Lastname'));
+console.log(adminAuthRegister('becks@gmail.com','eight12345','name', 'name'));
+console.log(adminQuizCreate(10, 'Tom', 'aaa'));
+console.log(data);
+console.log(adminQuizDescriptionUpdate(10,110, ''))
 
 
-export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate};
+let data = getData();
+
+console.log(data);
+console.log(adminAuthRegister('tomcruise@gmail.com','eight12345','Firstname', 'Lastname'));
+console.log(adminQuizCreate(10, 'Tom', 'aaa'))
+console.log(data)
+console.log(adminQuizDescriptionUpdate(10,110,''));
+console.log(data);
+*/
+
+export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate, adminQuizDescriptionUpdate};
+
 
 
