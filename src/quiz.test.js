@@ -1,6 +1,6 @@
 import {adminQuizCreate, adminQuizRemove} from './quiz.js';
-import {getData, setData} from './dataStore.js';
 import {adminAuthRegister} from './auth.js';
+import {adminQuizDescriptionUpdate} from './quiz.js';
 import {clear} from './other.js';
 
 const ERROR = {error: expect.any(String)};
@@ -199,5 +199,69 @@ describe('Tests of adminQuizRemove', () => {
     });
 
 });
+describe('adminQuizDescriptionUpdate', () => {
+    test ('authUserId testing - adminQuizDescriptionUpdate', () =>{
+        clear();
+        const newUser = adminAuthRegister('tomcruise@gmail.com','eight12345','Firstname', 'Lastname');
+        const newUser1 = adminAuthRegister('Newemail@gmail.com','eight12345','Firstname', 'Lastname');
+        const newquiz = adminQuizCreate(newUser.authUserId, 'Test Quiz 1', 'Made by Ujjwal');
+        const newquiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 1', 'Made by Ujjwal');
+            // Invalid authUserId
+            expect(adminQuizDescriptionUpdate(newUser.authUserId + 1,newquiz.quizId,'a')).toStrictEqual(ERROR);
 
+            // Error Edge Case
+            expect(adminQuizDescriptionUpdate(0,100,'a')).toStrictEqual(ERROR);
+
+            // Valid authUserId
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'a')).toEqual({});
+            expect(adminQuizDescriptionUpdate(newUser1.authUserId,newquiz1.quizId,'b')).toEqual({});
+    })
+
+
+    test ('quizId testing - adminQuizDescriptionUpdate', () =>{
+        clear();
+        const newUser = adminAuthRegister('tomcruise@gmail.com','eight12345','Firstname', 'Lastname');
+        const newUser1 = adminAuthRegister('Validemails@gmail.com', 'password123', 'Jack', 'Brooks');
+        const newquiz = adminQuizCreate(newUser.authUserId, 'Test Quiz 1', 'Made by Ujjwal');
+        const newquiz1 = adminQuizCreate(newUser.authUserId, 'Test Quiz 2', 'Made by Ujjwal');
+            // Case 1: Invalid quizId testing
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId + 1,'a')).toStrictEqual(ERROR);
+
+            // Case 2: Quiz is not owned by the owner
+            expect(adminQuizDescriptionUpdate(newUser1.authUserId, newquiz.quizId,'')).toEqual(ERROR);
+
+            // Case 3: Valid quizId testing
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'a')).toEqual({ });
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz1.quizId,'b')).toEqual({ });
+    })
+
+    test ('Description testing - adminQuizDescriptionUpdate', () =>{
+        clear();
+        const newUser = adminAuthRegister('kyrieirving@gmail.com','eight12345','Firstname', 'Lastname');
+        const newquiz = adminQuizCreate(newUser.authUserId, 'Test Quiz 1', 'Made by Ujjwal');
+            // Case 1: Invalid description testing
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'ThisStringNOTIsExactly100CharactersLongThisStringNOTIsExactly100CharactersLong Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor')).toStrictEqual(ERROR);
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'Andrew is such a great tutor    LongThisStringIsExactly100CharactersLongThisStringIsExactly100Charact')).toStrictEqual(ERROR);
+            
+            // Case 2: Valid description testing (edge cases)
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'Andrew is such a great tutor    LongThisStringIsExactly100CharactersLongThisStringIsExactly100Charac')).toEqual({ });
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'Andrew is such a great tutor')).toEqual({ });
+            expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'')).toEqual({ });
+            
+    })
+    test ('Normal cases - adminQuizDescriptionUpdate', () => {
+        clear();
+        const newUser = adminAuthRegister('kyrieirving@gmail.com','eight12345','Firstname', 'Lastname');
+        const newUser1 = adminAuthRegister('Validemails@gmail.com', 'password123', 'Jack', 'Brooks');
+        const newquiz = adminQuizCreate(newUser.authUserId, 'Test Quiz 1', 'Made by Ujjwal');
+        const newquiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 2', 'Made by Ujjwal');
+        const newquiz2 = adminQuizCreate(newUser.authUserId, 'Test Quiz 3', 'Made by Ujjwal');
+
+        expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz.quizId,'')).toEqual({ });
+        expect(adminQuizInfo(newUser.authUserId, newquiz.quizId)).toEqual({ })
+        expect(adminQuizDescriptionUpdate(newUser.authUserId,newquiz2.quizId,'')).toEqual({ });
+        expect(adminQuizDescriptionUpdate(newUser1.authUserId,newquiz1.quizId,'')).toEqual({ });
+    })
+
+})
 
