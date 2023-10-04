@@ -225,8 +225,9 @@ console.log(adminQuizCreate(10, 'Tom', 'aaa'))
 console.log(data)
 console.log(adminQuizDescriptionUpdate(10,110,''));
 console.log(data);
+*/
 
 export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate, adminQuizDescriptionUpdate};
-*/
+
 
 
