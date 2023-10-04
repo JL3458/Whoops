@@ -102,16 +102,17 @@ function adminQuizRemove(authUserId, quizId) {
 
 function adminQuizInfo(authUserId,quizId) {
     let data = getData();
-    // AuthUserId is not a valid user
+    // Case 1 - AuthUserId is not a valid user
     let userIndex = data.users.find((user) => user.userId === authUserId);
     if (userIndex === undefined || authUserId === 0) {
         return { error: 'Invalid User' };
     }
     let quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-    // Quiz doesn't exist or is not owned
+    // Case 2 - Quiz doesn't exist or is not owned
     if (quiz === undefined || quiz.userId !== authUserId) {
         return { error: 'Quiz not found or not owned by the user' };
     }
+    // Returns quiz
     return {
         quiz
     }
