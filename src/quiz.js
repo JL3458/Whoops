@@ -114,13 +114,17 @@ function adminQuizRemove(authUserId, quizId) {
 }
 
 function adminQuizInfo(authUserId,quizId) {
+    let data = getData();
+    let userIndex = data.users.find((user) => user.userId === authUserId);
+    if (userIndex === undefined || authUserId === 0) {
+        return { error: 'Invalid User' };
+    }
+    let quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+    if (quiz === undefined || quiz.userId !== authUserId) {
+        return { error: 'Quiz not found or not owned by the user' };
+    }
     return {
-        quizId: 1,
-        name: 'My Quiz',
-        timeCreated: 1683125870,
-        timeLastEdited: 1683125871,
-        description: 'This is my quiz',
-          
+        quiz
     }
 }
 
@@ -132,5 +136,4 @@ function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
     return {}
 }
 
-export {adminQuizList, adminQuizCreate, adminQuizRemove};
-
+export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo};
