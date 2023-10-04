@@ -2,14 +2,27 @@ import {getData, setData} from './dataStore.js';
 import {adminAuthRegister} from './auth.js';
 
 function adminQuizList(authUserId) {
-    return { 
-        quizzes: [
-            {
-            quizId: 1,
-            name: 'My Quiz',
-            }
-        ]
+    let data = getData();
+    let userindex = data.users.find((user) => user.userId === authUserId);
+    // Case 1 - authUserId is not a valid user.
+    if (userindex === undefined || authUserId === 0) {
+        return { error: 'Invalid Entry'};
     }
+
+    // retrieves the name of the quiz and quizId from data.md
+    let quizzes = data.quizzes.filter((quiz) => quiz.userId === authUserId);
+
+    // returns the quiz information in the format 
+    /* quizzes: {
+        quizId: 
+        name: 
+    }*/
+    return {
+        quizzes: quizzes.map((quiz) => ({
+            quizId: quiz.quizId,
+            name: quiz.name,
+        })),
+    };
 }
 
 function adminQuizCreate(authUserId, name, description) {
@@ -175,4 +188,6 @@ function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
 ///////////////////////////////
 
 
-export {adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate};
+export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate};
+
+
