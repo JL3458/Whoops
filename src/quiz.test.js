@@ -227,15 +227,28 @@ describe('adminQuizInfo', () => {
         expect(quiz1).toEqual({ quizId: expect.any(Number) });
         const result = adminQuizInfo(newUser1.authUserId, quiz1.quizId);
         expect(result).toEqual({
-            quiz: {
                 quizId: quiz1.quizId,
                 name: 'Test Quiz 1',
-                description: 'Sample Quiz Testing',
                 timeCreated: expect.any(Number),
                 timeLastEdited: 0,
-                userId: newUser1.authUserId,
-            },
+                description: 'Sample Quiz Testing',
         });
+    });
+    test('Valid Quiz Info', () => {
+        const newUser1 = adminAuthRegister('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+        const quiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 1', 'Sample Quiz Testing');
+        expect(quiz1).toEqual({ quizId: expect.any(Number) });
+        const result = adminQuizInfo(newUser1.authUserId, quiz1.quizId);
+        expect(result).toEqual({
+                quizId: quiz1.quizId,
+                name: 'Test Quiz 1',
+                timeCreated: expect.any(Number),
+                timeLastEdited: 0,
+                description: 'Sample Quiz Testing',
+        });
+        clear();
+        const result2 = adminQuizInfo(newUser1.authUserId, quiz1.quizId);
+        expect(result2).toEqual(ERROR);
     });
 });
 
