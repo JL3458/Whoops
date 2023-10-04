@@ -4,11 +4,19 @@ import {adminAuthRegister} from './auth.js';
 function adminQuizList(authUserId) {
     let data = getData();
     let userindex = data.users.find((user) => user.userId === authUserId);
+    // Case 1 - authUserId is not a valid user.
     if (userindex === undefined || authUserId === 0) {
         return { error: 'Invalid Entry'};
     }
+
+    // retrieves the name of the quiz and quizId from data.md
     let quizzes = data.quizzes.filter((quiz) => quiz.userId === authUserId);
 
+    // returns the quiz information in the format 
+    /* quizzes: {
+        quizId: 
+        name: 
+    }*/
     return {
         quizzes: quizzes.map((quiz) => ({
             quizId: quiz.quizId,
