@@ -54,7 +54,7 @@ function adminQuizCreate(authUserId, name, description) {
         name: name,
         description: description,
         timeCreated: Date.now()/1000,
-        timeLastEdited: 0,
+        timeLastEdited: Date.now()/1000,
         userId: authUserId
     };
 
@@ -161,7 +161,9 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
 
     // Update the quiz name
     quiz.name = name;
+    quiz.timeLastEdited = Date.now()/1000
     setData(data);
+    
 
     return {};
 }
@@ -172,8 +174,5 @@ function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
 
 ///////////////////////////////
 
-console.log(adminAuthRegister('valid@gmail.com', 'password123', 'ansh', 'shervin'));
-console.log(adminQuizCreate(10, 'test quiz', 'ssvfsdfvsdv'));
-console.log(adminQuizInfo(10, 110));
 
 export {adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate};
