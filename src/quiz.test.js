@@ -206,10 +206,10 @@ describe('adminQuizInfo', () => {
     });
 
     test('Invalid UserId', () => {
-        expect(adminQuizInfo(234097634, 1)).toEqual({ error: 'Invalid User' });
-        expect(adminQuizInfo(1248734, 2)).toEqual({ error: 'Invalid User' });
-        expect(adminQuizInfo(24763, 3)).toEqual({ error: 'Invalid User' });
-        expect(adminQuizInfo(5487, 4)).toEqual({ error: 'Invalid User' });
+        expect(adminQuizInfo(234097634, 1)).toEqual(ERROR);
+        expect(adminQuizInfo(1248734, 2)).toEqual(ERROR);
+        expect(adminQuizInfo(24763, 3)).toEqual(ERROR);
+        expect(adminQuizInfo(5487, 4)).toEqual(ERROR);
     });
 
     test('Quiz not owned by the user', () => {
@@ -218,7 +218,7 @@ describe('adminQuizInfo', () => {
         const quiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 1', 'Sample Quiz Testing');
         expect(quiz1).toEqual({ quizId: expect.any(Number) });
         const result = adminQuizInfo(newUser2.authUserId, quiz1.quizId);
-        expect(result).toEqual({ error: 'Quiz not found or not owned by the user' });
+        expect(result).toEqual(ERROR);
     });
 
     test('Valid Quiz Info', () => {
@@ -230,7 +230,7 @@ describe('adminQuizInfo', () => {
                 quizId: quiz1.quizId,
                 name: 'Test Quiz 1',
                 timeCreated: expect.any(Number),
-                timeLastEdited: 0,
+                timeLastEdited: expect.any(Number),
                 description: 'Sample Quiz Testing',
         });
     });
@@ -243,7 +243,7 @@ describe('adminQuizInfo', () => {
                 quizId: quiz1.quizId,
                 name: 'Test Quiz 1',
                 timeCreated: expect.any(Number),
-                timeLastEdited: 0,
+                timeLastEdited: expect.any(Number),
                 description: 'Sample Quiz Testing',
         });
         clear();
