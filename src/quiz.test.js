@@ -1,4 +1,4 @@
-import {adminQuizCreate, adminQuizRemove} from './quiz.js';
+import {adminQuizCreate, adminQuizRemove, adminQuizInfo} from './quiz.js';
 import {getData, setData} from './dataStore.js';
 import {adminAuthRegister} from './auth.js';
 import {clear} from './other.js';
@@ -200,4 +200,41 @@ describe('Tests of adminQuizRemove', () => {
 
 });
 
+describe('adminQuizInfo', () => {
+    beforeEach(() => {
+        clear();
+    });
 
+    test('Invalid UserId', () => {
+        expect(adminQuizInfo(234097634, 1)).toEqual({ error: 'Invalid User' });
+        expect(adminQuizInfo(1248734, 2)).toEqual({ error: 'Invalid User' });
+        expect(adminQuizInfo(24763, 3)).toEqual({ error: 'Invalid User' });
+        expect(adminQuizInfo(5487, 4)).toEqual({ error: 'Invalid User' });
+    });
+
+    test('Quiz not owned by the user', () => {
+        const newUser1 = adminAuthRegister('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+        const newUser2 = adminAuthRegister('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+        const quiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 1', 'Sample Quiz Testing');
+        expect(quiz1).toEqual({ quizId: expect.any(Number) });
+        const result = adminQuizInfo(newUser2.authUserId, quiz1.quizId);
+        expect(result).toEqual({ error: 'Quiz not found or not owned by the user' });
+    });
+
+    test('Valid Quiz Info', () => {
+        const newUser1 = adminAuthRegister('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+        const quiz1 = adminQuizCreate(newUser1.authUserId, 'Test Quiz 1', 'Sample Quiz Testing');
+        expect(quiz1).toEqual({ quizId: expect.any(Number) });
+        const result = adminQuizInfo(newUser1.authUserId, quiz1.quizId);
+        expect(result).toEqual({
+            quiz: {
+                quizId: quiz1.quizId,
+                name: 'Test Quiz 1',
+                description: 'Sample Quiz Testing',
+                timeCreated: expect.any(Number),
+                timeLastEdited: 0,
+                userId: newUser1.authUserId,
+            },
+        });
+    });
+});
