@@ -1,6 +1,8 @@
 {
     "scripts": {
-        "test": "jest --testMatch '**/?(*.)+(test).js'"
+        "test": "jest --testMatch '**/?(*.)+(test).js'",
+        "lint": "eslint \"**/**.js\"",
+        "lint-fix": "eslint --fix \"**/**.js\""
     },
     "dependencies": {
         "rewire": "^6.0.0",
@@ -10,6 +12,10 @@
         "@babel/cli": "^7.22.5",
         "@babel/core": "^7.22.5",
         "@babel/preset-env": "^7.22.5",
+        "@typescript-eslint/eslint-plugin": "^6.7.4",
+        "@typescript-eslint/parser": "^6.7.4",
+        "eslint": "^8.50.0",
+        "eslint-plugin-jest": "^27.4.2",
         "jest": "^28.1.0"
     },
     "type": "module",
