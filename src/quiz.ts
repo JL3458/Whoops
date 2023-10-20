@@ -23,13 +23,22 @@ interface QuizInfoReturn {
     description: number,
 }
 
+// Helper Functions
+
+function CheckValidUserId(authUserId: number): boolean {
+  const data = getData();
+  if (data.users.find((user) => user.userId === authUserId) === undefined) {
+    return true;
+  }
+  return false;
+}
+
 export function adminQuizList(authUserId: number): QuizListReturn | ErrorReturn {
   const data = getData();
 
-  const user = data.users.find((user) => user.userId === authUserId);
   // Checks if authUserId refers to an invalid user
-  if (user === undefined) {
-    return { error: 'Invalid Entry' };
+  if (CheckValidUserId(authUserId)) {
+    return { error: 'AuthUserId is not a valid user' };
   }
 
   // Retrieves the names of the quizzes and respective quizIds
@@ -52,7 +61,7 @@ export function adminQuizCreate(authUserId: number, name: string, description: s
   const data = getData();
 
   // Checks if authUserId refers to an invalid user
-  if (data.users.find((user) => user.userId === authUserId) === undefined) {
+  if (CheckValidUserId(authUserId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
 
@@ -101,7 +110,7 @@ export function adminQuizRemove(authUserId: number, quizId: number): ErrorReturn
   const data = getData();
 
   // Checks if authUserId refers to an invalid user
-  if (data.users.find((user) => user.userId === authUserId) === undefined) {
+  if (CheckValidUserId(authUserId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
 
@@ -130,8 +139,7 @@ export function adminQuizInfo(authUserId: number, quizId: number): QuizInfoRetur
   const data = getData();
 
   // Checks if authUserId refers to an invalid user
-  const user = data.users.find((user) => user.userId === authUserId);
-  if (user === undefined) {
+  if (CheckValidUserId(authUserId)) {
     return { error: 'Invalid User' };
   }
 
@@ -155,8 +163,7 @@ export function adminQuizNameUpdate(authUserId: number, quizId: number, name: st
   const data = getData();
 
   // Checks if authUserId refers to an invalid user
-  const user = data.users.find((user) => user.userId === authUserId);
-  if (!user) {
+  if (CheckValidUserId(authUserId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
 
@@ -200,12 +207,12 @@ export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, d
   const data = getData();
 
   // Checks if authUserId refers to an invalid user
-  if (data.users.find(item => item.userId === authUserId) === undefined || authUserId === 0) {
+  if (CheckValidUserId(authUserId)) {
     return { error: 'authUserId does not exist' };
   }
 
   // Checks if quizId refers to an invalid quiz
-  if (data.quizzes.find(item => item.quizId === quizId) === undefined || quizId === 100) {
+  if (data.quizzes.find(item => item.quizId === quizId) === undefined) {
     return { error: 'quizId does not exist' };
   }
 
