@@ -1,11 +1,35 @@
-import {getData, setData} from './dataStore.js';
+import {getData, setData} from './dataStore.ts';
 
-function adminQuizList(authUserId) {
+interface ErrorReturn {
+    error: string;
+}
+
+interface QuizListReturn {
+    quizzes: {
+        quizId: number,
+        name: string
+    }
+}
+
+interface QuizCreateReturn {
+    quizId: number,
+}
+
+interface QuizInfoReturn {
+    quizId: number,
+    name: number,
+    timeCreated: number,
+    timeLastEdited: number,
+    description: number,
+}
+
+
+export function adminQuizList(authUserId: number): quizListReturn | ErrorReturn {
     let data = getData();
 
-    let userindex = data.users.find((user) => user.userId === authUserId);
+    let user = data.users.find((user) => user.userId === authUserId);
     // Checks if authUserId refers to an invalid user
-    if (userindex === undefined || authUserId === 0) {
+    if (user === undefined) {
         return { error: 'Invalid Entry'};
     }
 
@@ -25,11 +49,11 @@ function adminQuizList(authUserId) {
     };
 }
 
-function adminQuizCreate(authUserId, name, description) {
+export function adminQuizCreate(authUserId: number, name: string, description: string): QuizCreateReturn | ErrorReturn {
     let data = getData();
 
     // Checks if authUserId refers to an invalid user
-    if (data.users.find((user) => user.userId === authUserId) === undefined || authUserId === 0) {
+    if (data.users.find((user) => user.userId === authUserId) === undefined) {
         return {error: 'AuthUserId is not a valid user'};
     }  
 
@@ -56,7 +80,7 @@ function adminQuizCreate(authUserId, name, description) {
     }
 
     // Defines the new quiz which is to be added in format required.
-    let quizIdGenerator = data.quizzes[data.quizzes.length - 1].quizId + 10;
+    let quizIdGenerator = data.quizzes.length + 10;
     const tempQuizStorage = {
         quizId: quizIdGenerator,
         name: name,
@@ -74,18 +98,18 @@ function adminQuizCreate(authUserId, name, description) {
     };
 }
 
-function adminQuizRemove(authUserId, quizId) {
+export function adminQuizRemove(authUserId: number, quizId: number): ErrorReturn | null {
     let data = getData();
 
     // Checks if authUserId refers to an invalid user
-    if (data.users.find((user) => user.userId === authUserId) === undefined || authUserId === 0) {
+    if (data.users.find((user) => user.userId === authUserId) === undefined) {
         return {error: 'AuthUserId is not a valid user'};
     } 
 
     let tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
     // Checks if quizId refers to an invalid quiz
-    if (tempQuiz === undefined || tempQuiz.quizId === 100) {
+    if (tempQuiz === undefined) {
         return {error: 'quizId is not of a valid quiz'};
     } 
 
@@ -103,12 +127,12 @@ function adminQuizRemove(authUserId, quizId) {
     return {};
 }
 
-function adminQuizInfo(authUserId,quizId) {
+export function adminQuizInfo(authUserId: number, quizId: number): QuizInfoReturn | ErrorReturn {
     let data = getData();
 
     // Checks if authUserId refers to an invalid user
-    let userIndex = data.users.find((user) => user.userId === authUserId);
-    if (userIndex === undefined || authUserId === 0) {
+    let user = data.users.find((user) => user.userId === authUserId);
+    if (user === undefined) {
         return { error: 'Invalid User' };
     }
 
@@ -128,18 +152,18 @@ function adminQuizInfo(authUserId,quizId) {
     };
 }
 
-function adminQuizNameUpdate(authUserId, quizId, name) {
+export function adminQuizNameUpdate(authUserId: number, quizId: number, name: string): ErrorReturn | null {
     let data = getData();
 
     // Checks if authUserId refers to an invalid user
     const user = data.users.find((user) => user.userId === authUserId);
-    if (!user || authUserId === 0) {
+    if (!user) {
         return { error: 'AuthUserId is not a valid user' };
     }
 
     // Checks if quizId refers to an invalid quiz
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-    if (!quiz || quiz.quizId === 100) {
+    if (!quiz) {
         return { error: 'quizId does not refer to a valid quiz' };
     }
 
@@ -170,11 +194,10 @@ function adminQuizNameUpdate(authUserId, quizId, name) {
     quiz.timeLastEdited = Math.floor(Date.now()/1000);
     setData(data);
     
-
     return {};
 }
 
-function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
+export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, description: string): ErrorReturn | null {
     let data = getData();
 
     // Checks if authUserId refers to an invalid user
@@ -206,7 +229,6 @@ function adminQuizDescriptionUpdate( authUserId, quizId, description ) {
     return {};
 }
 
-export {adminQuizList, adminQuizCreate, adminQuizRemove, adminQuizInfo, adminQuizNameUpdate, adminQuizDescriptionUpdate};
 
 
 
