@@ -1,4 +1,4 @@
-import {setData} from './dataStore.js'
+import {setData} from './dataStore.ts'
 
 function clear() {
     // Original state of data
