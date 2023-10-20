@@ -1,5 +1,5 @@
 
-import { adminAuthRegister, adminUserDetails, adminAuthLogin } from './auth.js';
+import { adminAuthRegister, adminUserDetails, adminAuthLogin } from './auth.ts';
 import {clear} from './other.js';
 
 const ERROR = { error: expect.any(String) };
@@ -21,16 +21,16 @@ describe('Tests for adminUserDetails', () => {
 
     test ('Valid Tests', () => {
         const authId1 = adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
-        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: authId1.authUserId, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
         const authId2 = adminAuthRegister('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzalez');
         expect(adminAuthLogin('ValidEmail2@mail.com', 'password123')).toEqual({authUserId: authId2.authUserId});
         expect(adminAuthLogin('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
-        expect(adminUserDetails(authId2.authUserId)).toEqual({user: {userId: 20, name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1}});
+        expect(adminUserDetails(authId2.authUserId)).toEqual({user: {userId: authId2.authUserId, name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1}});
     })
 
     test ('Sample Test userDetails with clear()', () => {
         const authId1 = adminAuthRegister('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
-        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+        expect(adminUserDetails(authId1.authUserId)).toEqual({user: {userId: authId1.authUserId, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
         expect(clear()).toEqual({});
         expect(adminUserDetails(authId1.authUserId)).toEqual(ERROR);
     })
