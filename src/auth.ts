@@ -63,7 +63,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   };
 }
 
-export function adminAuthLogin(email: string, password: string) {
+export function adminAuthLogin(email: string, password: string): AuthReturn | ErrorReturn {
   const data = getData();
 
   // Checking if user with email exists
@@ -82,8 +82,11 @@ export function adminAuthLogin(email: string, password: string) {
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins = user.numSuccessfulLogins + 1;
 
+  const newToken = startSession(user.userId);
+  const encodeToken = encodeURIComponent(JSON.stringify(newToken));
+
   return {
-    authUserId: user.userId
+    token: encodeToken
   };
 }
 
