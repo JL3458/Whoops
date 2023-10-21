@@ -1,8 +1,8 @@
-import { setData } from './dataStore';
-
+import { getData, setData } from './dataStore';
 export function clear() {
+  let data = getData();
   // Original state of data
-  const data = {
+  data = {
     users: [],
     quizzes: []
   };
@@ -12,5 +12,3 @@ export function clear() {
 
   return { };
 }
-
-
