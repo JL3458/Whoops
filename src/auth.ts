@@ -1,4 +1,5 @@
-import { getData, setData } from './dataStore.ts';
+import { randomUUID } from 'crypto';
+import { getData, setData, token } from './dataStore';
 import validator from 'validator';
 
 interface ErrorReturn {
@@ -6,7 +7,7 @@ interface ErrorReturn {
 }
 
 interface AuthReturn {
-    authUserId: number
+    token: string
 }
 
 interface UserDetailsReturn {
@@ -53,14 +54,16 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
 
   const Id = data.users.length + 1;
   data.users.push({ userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 });
+  const newToken = startSession(Id);
+  const encodeToken = encodeURIComponent(JSON.stringify(newToken));
   setData(data);
 
   return {
-    authUserId: Id
+    token: encodeToken
   };
 }
 
-export function adminAuthLogin(email: string, password: string): ErrorReturn | AuthReturn {
+export function adminAuthLogin(email: string, password: string) {
   const data = getData();
 
   // Checking if user with email exists
@@ -105,4 +108,18 @@ export function adminUserDetails(authUserId: number): ErrorReturn | UserDetailsR
       numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
     }
   };
+}
+
+function startSession(authUserId: number): token {
+  const data = getData();
+
+  // If a session does not exist for current user, create a new session
+  const findToken = data.tokens.find(({ userId }) => userId === authUserId);
+  if (findToken === undefined) {
+    const newToken = { userId: authUserId, sessionId: randomUUID() };
+    data.tokens.push(newToken);
+    return newToken;
+  }
+
+  return findToken;
 }
