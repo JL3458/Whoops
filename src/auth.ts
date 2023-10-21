@@ -114,10 +114,11 @@ function startSession(authUserId: number): token {
   const data = getData();
 
   // If a session does not exist for current user, create a new session
-  const findToken = data.tokens.find(({ userId }) => userId === authUserId);
+  const findToken = data.tokens.find((currentToken) => currentToken.userId === authUserId);
   if (findToken === undefined) {
     const newToken = { userId: authUserId, sessionId: randomUUID() };
     data.tokens.push(newToken);
+    setData(data);
     return newToken;
   }
 

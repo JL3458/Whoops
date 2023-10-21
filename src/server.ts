@@ -10,6 +10,7 @@ import path from 'path';
 import process from 'process';
 import { clear } from './other';
 import { adminAuthRegister } from './auth';
+import { adminQuizCreate } from './quiz';
 
 // Set up web app
 const app = express();
@@ -41,6 +42,9 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(ret);
 });
 
+/// ///////////////////////// auth.ts ///////////////////////////////
+
+// authAdminRegister Request
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
 
@@ -52,9 +56,27 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   res.json(ret);
 });
 
-// Clear request
+/// ///////////////////////// other.ts ///////////////////////////////
+
+// Clear Request
 app.delete('/v1/clear', (req: Request, res: Response) => {
   res.json(clear());
+});
+
+/// ///////////////////////// quiz.ts ///////////////////////////////
+
+// adminQuizCreate Request
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const { token, name, description } = req.body;
+
+  const response = adminQuizCreate(token, name, description);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
 });
 
 // ====================================================================
