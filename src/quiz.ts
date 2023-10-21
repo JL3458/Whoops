@@ -113,12 +113,19 @@ export function adminQuizCreate(token: string, name: string, description: string
   };
 }
 
-export function adminQuizRemove(authUserId: number, quizId: number): ErrorReturn | null {
+export function adminQuizRemove(token: string, quizId: number) {
   const data = getData();
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
-    return { error: 'AuthUserId is not a valid user' };
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
   }
 
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -129,11 +136,15 @@ export function adminQuizRemove(authUserId: number, quizId: number): ErrorReturn
   }
 
   // Checks if the quiz belongs to the current logged in user
-  if (tempQuiz !== undefined && tempQuiz.userId !== authUserId) {
-    return { error: 'quizId does not refer to a quiz that this user owns' };
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
-  // Removes the quiz from data
+  // Push Quiz in Trash in DataStore
+  tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  data.trash.push(tempQuiz);
+
+  // Removes the quiz from quizes list
   const quizIndex = data.quizzes.findIndex((quiz) => quiz.quizId === quizId);
   data.quizzes.splice(quizIndex, 1);
 
