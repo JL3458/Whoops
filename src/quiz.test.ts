@@ -203,7 +203,6 @@ describe('Tests of adminQuizRemove', () => {
   });
 });
 
-
 /// /////////////////////// Epilouge //////////////////////////////
 // TODO: Add relevant tests calling the server.ts files
 
