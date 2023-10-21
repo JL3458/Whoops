@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore.ts';
+import { getData, setData } from './dataStore';
 
 interface ErrorReturn {
     error: string;
@@ -57,12 +57,19 @@ export function adminQuizList(authUserId: number): QuizListReturn | ErrorReturn 
   };
 }
 
-export function adminQuizCreate(authUserId: number, name: string, description: string): QuizCreateReturn | ErrorReturn {
+export function adminQuizCreate(token: string, name: string, description: string): QuizCreateReturn | ErrorReturn {
   const data = getData();
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
-    return { error: 'AuthUserId is not a valid user' };
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
   }
 
   // Checks if entered quiz name is invalid
@@ -78,7 +85,7 @@ export function adminQuizCreate(authUserId: number, name: string, description: s
 
   // Checks whether name is already used by the current logged in user for another quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.name === name);
-  if (tempQuiz !== undefined && tempQuiz.userId === authUserId) {
+  if (tempQuiz !== undefined && tempQuiz.userId === tempToken.userId) {
     return { error: 'Quiz name same to the previous quiz made by the user' };
   }
 
@@ -95,7 +102,7 @@ export function adminQuizCreate(authUserId: number, name: string, description: s
     description: description,
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    userId: authUserId
+    userId: tempToken.userId
   };
 
   data.quizzes.push(tempQuizStorage);

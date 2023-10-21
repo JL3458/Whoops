@@ -22,7 +22,7 @@ export function authRegisterRequest(email: string, password: string, nameFirst: 
       }
     }
   );
-  return JSON.parse(res.body.toString());
+  return JSON.parse(res.body as string);
 }
 
 describe('Tests for adminAuthRegister', () => {
