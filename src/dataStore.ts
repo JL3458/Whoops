@@ -26,12 +26,14 @@ interface DataStore {
   users: user[]
   quizzes: quiz[]
   tokens: token[]
+  trash: quiz[]
 }
 
 let data: DataStore = {
   users: [],
   quizzes: [],
-  tokens: []
+  tokens: [],
+  trash: []
 };
 
 // Use get() to access the data
