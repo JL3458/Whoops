@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthRegister } from './auth';
+import { adminAuthLogin, adminAuthRegister } from './auth';
 import { adminQuizCreate } from './quiz';
 
 // Set up web app
@@ -49,6 +49,18 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
 
   const ret = adminAuthRegister(email, password, nameFirst, nameLast);
+
+  if ('error' in ret) {
+    return res.status(400).json(ret);
+  }
+  res.json(ret);
+});
+
+// authAdminLogin Request
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const ret = adminAuthLogin(email, password);
 
   if ('error' in ret) {
     return res.status(400).json(ret);
