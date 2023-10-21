@@ -3,8 +3,8 @@ import request from 'sync-request-curl';
 import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
 
-function clearRequest() {
-  const res = request('DELETE', SERVER_URL + '/clear');
+export function clearRequest() {
+  const res = request('DELETE', SERVER_URL + '/v1/clear');
   return JSON.parse(res.body as string);
 }
 
