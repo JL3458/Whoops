@@ -17,14 +17,21 @@ export interface quiz {
   userId: number
 }
 
+export interface token {
+  userId: number,
+  sessionId: string
+}
+
 interface DataStore {
   users: user[]
   quizzes: quiz[]
+  tokens: token[]
 }
 
 let data: DataStore = {
   users: [],
-  quizzes: []
+  quizzes: [],
+  tokens: []
 };
 
 // Use get() to access the data
