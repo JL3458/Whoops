@@ -5,10 +5,9 @@ import { port, url } from './config.json';
 import { clearRequest } from './other.test';
 const SERVER_URL = `${url}:${port}`;
 
-// TODO: Add relevant tests calling the server.ts files
-
 const ERROR = { error: expect.any(String) };
 
+/// ////////////////////// Request Functions ////////////////////////////
 export function authRegisterRequest(email: string, password: string, nameFirst: string, nameLast: string) {
   const res = request(
     'POST',
@@ -24,6 +23,24 @@ export function authRegisterRequest(email: string, password: string, nameFirst: 
   );
   return JSON.parse(res.body as string);
 }
+
+export function authLoginRequest(email: string, password: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/admin/auth/login',
+    {
+      json: {
+        email: email,
+        password: password,
+      }
+    }
+  );
+  return JSON.parse(res.body as string);
+}
+
+beforeEach(() => {
+  clearRequest();
+});
 
 describe('Tests for adminAuthRegister', () => {
   beforeEach(() => {
@@ -76,5 +93,37 @@ describe('Tests for adminAuthRegister', () => {
     // Now, able to register new users since previous users with same email were cleared
     expect(authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({ token: expect.any(String) });
     expect(authRegisterRequest('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+  });
+});
+
+describe('Tests for adminAuthlogin', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Email does not exist', () => {
+    expect(authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({ token: expect.any(String) });
+    expect(authRegisterRequest('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail3@mail.com', 'password123')).toEqual(ERROR);
+    expect(authLoginRequest('ValidEmail4@mail.com', 'password123')).toEqual(ERROR);
+  });
+
+  test('Incorrect Password', () => {
+    expect(authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail1@mail.com', 'password456')).toEqual(ERROR);
+    expect(authRegisterRequest('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
+  });
+
+  test('Valid tests with clear', () => {
+    expect(authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail1@mail.com', 'password123')).toEqual({ token: expect.any(String) });
+    expect(authRegisterRequest('ValidEmail2@mail.com', 'pass1234', 'Pedro', 'Gonzalez')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail2@mail.com', 'pass1234')).toEqual({ token: expect.any(String) });
+    expect(clearRequest()).toEqual({});
+
+    // Now, unable to login as the respective users have been cleared
+    expect(authLoginRequest('ValidEmail1@mail.com', 'password456')).toEqual(ERROR);
+    expect(authLoginRequest('ValidEmail2@mail.com', 'pass1234')).toEqual(ERROR);
   });
 });
