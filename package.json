@@ -33,7 +33,7 @@
         "jest": "^28.1.0",
         "nyc": "^15.1.0",
         "swagger-ui-express": "^4.6.2",
-        "sync-request-curl": "^2.1.5",
+        "sync-request-curl": "^2.1.6",
         "ts-jest": "^28.0.2",
         "yaml": "^2.2.2"
     }
