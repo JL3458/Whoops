@@ -14,6 +14,11 @@ export function adminQuizCreateRequest(token: string, name: string, description:
   return JSON.parse(request1.body as string);
 }
 
+export function adminQuizRemoveRequest(token: string, quizid: number) {
+  const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}`, { json: { token: token } });
+  return JSON.parse(request1.body as string);
+}
+
 /// ////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreate', () => {
@@ -103,6 +108,98 @@ describe('Tests of adminQuizCreate', () => {
     expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toEqual(ERROR);
     expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toEqual(ERROR);
     expect(adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath')).toEqual(ERROR);
+  });
+});
+
+describe('Tests of adminQuizRemove', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizRemoveRequest('', quizIndex.quizId)).toEqual(ERROR);
+  });
+
+  test('QuizId is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId + 1)).toEqual(ERROR);
+  });
+
+  test('Removal when there are no quizzes', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    expect(adminQuizRemoveRequest(newUser.token, 100)).toEqual(ERROR);
+  });
+
+  test('Quiz is not owned by the owner', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascharanous');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizRemoveRequest(newUser2.token, quizIndex.quizId)).toEqual(ERROR);
+  });
+
+  test('Deleting one quiz, Normal Case', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
+
+    // We wont be able to make a new Quiz
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual(ERROR);
+
+    //  Now, we remove this quiz
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
+
+    // Adding the quizes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+  });
+
+  test('Multiple Quizzes Deletion from one user, Normal Case', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex1 = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndex2 = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    const quizIndex3 = adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
+
+    // We wont be able to make new Quizzes
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual(ERROR);
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test')).toEqual(ERROR);
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual(ERROR);
+
+    // Now, we remove this quizzes
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex2.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex3.quizId)).toEqual({});
+
+    // Adding the quizzes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+  });
+
+  test('Multiple quizzes Deletion with mutiple users, Normal Case', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascheranous');
+    const newUser3 = authRegisterRequest('Validemailt@gmail.com', 'password123', 'Sanath', 'Nevagi');
+    const quizIndex1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar');
+    const quizIndex2 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason');
+    adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath');
+
+    // We wont be able to make new Quizzes
+    adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar');
+    adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason');
+
+    // Now, we remove this quizzes
+    expect(adminQuizRemoveRequest(newUser1.token, quizIndex1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser2.token, quizIndex2.quizId)).toEqual({});
+
+    // Adding the quizzes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toEqual({ quizId: expect.any(Number) });
   });
 });
 
