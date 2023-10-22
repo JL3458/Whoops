@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
+import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUserDetails } from './auth';
 import { adminQuizCreate, adminQuizRemove } from './quiz';
 
 // Set up web app
@@ -44,39 +44,62 @@ app.get('/echo', (req: Request, res: Response) => {
 
 /// ///////////////////////// auth.ts ///////////////////////////////
 
-// authAdminRegister Request
+// adminAuthRegister Request
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  // email, password, nameFirst, nameLast values obtained from body
   const { email, password, nameFirst, nameLast } = req.body;
 
-  const ret = adminAuthRegister(email, password, nameFirst, nameLast);
-
-  if ('error' in ret) {
-    return res.status(400).json(ret);
-  }
-  res.json(ret);
-});
-
-// authAdminLogin Request
-app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  const ret = adminAuthLogin(email, password);
-
-  if ('error' in ret) {
-    return res.status(400).json(ret);
-  }
-  res.json(ret);
-});
-
-// authAdminUserDetails Request
-app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  // data is passed into a query string
-  const token = req.query.token as string;
   // logic of the function is retrieved from auth.ts
-  const response = adminUserDetails(token);
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
+
   // handles an error
   if ('error' in response) {
     return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminAuthLogin Request
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  // email and password values obtained from body
+  const { email, password } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogin(email, password);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminUserDetails Request
+app.get('/v1/admin/user/details', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUserDetails(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminAuthLogout Request
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  // token value obtained from body
+  const { token } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogout(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(401).json(response);
   }
   res.json(response);
 });
