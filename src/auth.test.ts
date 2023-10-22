@@ -64,6 +64,22 @@ export function authLogoutRequest(token: string) {
   return JSON.parse(res.body as string);
 }
 
+export function updateUserDetailsRequest(token: string, email: string, nameFirst: string, nameLast: string) {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v1/admin/user/details',
+    {
+      json: {
+        token: token,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast
+      }
+    }
+  );
+  return JSON.parse(res.body as string);
+}
+
 /// //////////////////////////// Tests /////////////////////////////////
 
 beforeEach(() => {
@@ -211,5 +227,61 @@ describe('Tests for adminAuthlogout', () => {
 
     // Now, unable to logout as the respective users have been cleared
     expect(authLogoutRequest(token2.token)).toEqual(ERROR);
+  });
+});
+
+describe('Tests for adminUpdateUserDetails', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty or invalid', () => {
+    authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserDetailsRequest('', 'updated@gmail.com', 'Updated', 'Updated')).toEqual(ERROR);
+  });
+
+  test('Invalid Email', () => {
+    const token1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmailmail.com', 'Pedro', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, '@mail.com', 'Pedro', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@', 'Pedro', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail', 'Pedro', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail.com', 'Pedro', 'Gonzalez')).toEqual(ERROR);
+  });
+
+  test('Invalid first name', () => {
+    const token1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'Pedro123', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'P', 'Gonzalez')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'Pedrooooooooooooooooo', 'Gonzalez')).toEqual(ERROR);
+  });
+
+  test('Invalid last name', () => {
+    const token1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'Pedro', 'Gonzalez123')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'Pedro', 'G')).toEqual(ERROR);
+    expect(updateUserDetailsRequest(token1.token, 'InvalidEmail@mail.com', 'Pedro', 'Gonzalezzzzzzzzzzzzzz')).toEqual(ERROR);
+  });
+
+  test('Valid Tests with same email error', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(token1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Pedro Gonzalez', email: 'ValidEmail1@gmail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
+
+    // Does not return error since email is of current authorised user
+    expect(updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toEqual({});
+    expect(userDetailsRequest(token1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Updated Name', email: 'ValidEmail1@gmail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
+    expect(authRegisterRequest('ValidEmail2@gmail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+
+    // Will return error since email is in use by other user
+    expect(updateUserDetailsRequest(token1.token, 'ValidEmail2@gmail.com', 'Updated', 'Name')).toEqual(ERROR);
+  });
+
+  test('Testing with Clear', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toEqual({});
+    expect(clearRequest()).toEqual({});
+
+    // returns an error since token becomes invalid
+    expect(updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toEqual(ERROR);
   });
 });
