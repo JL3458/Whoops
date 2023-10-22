@@ -21,18 +21,59 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
 
 export function adminQuizListRequest(token: string) {
   const res = request(
-    'GET', 
+    'GET',
     SERVER_URL + '/v1/admin/quiz/list',
     {
       qs: {
         token
       }
     }
-  )
-  return JSON.parse(res.body.toString())
+  );
+  return JSON.parse(res.body.toString());
 }
 
 /// ////////////////////// Main Tests /////////////////////////////
+describe('Tests for adminQuizList', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Invalid token', () => {
+    expect(adminQuizListRequest('234097634')).toEqual(ERROR);
+    expect(adminQuizListRequest('1248734')).toEqual(ERROR);
+    expect(adminQuizListRequest('24763')).toEqual(ERROR);
+    expect(adminQuizListRequest('5487')).toEqual(ERROR);
+  });
+
+  test('Valid Test quizList with 1 quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser2.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+  });
+
+  test('Valid Test quizList with multiple quizzes', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }, { quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 3', 'Testing?')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 4', 'Testing!')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser2.token)).toEqual({
+      quizzes:
+            [{ quizId: expect.any(Number), name: 'Test Quiz 1' },
+              { quizId: expect.any(Number), name: 'Test Quiz 2' },
+              { quizId: expect.any(Number), name: 'Test Quiz 3' },
+              { quizId: expect.any(Number), name: 'Test Quiz 4' }
+            ]
+    });
+  });
+});
 
 describe('Tests of adminQuizCreate', () => {
   beforeEach(() => {
