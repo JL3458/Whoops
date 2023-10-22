@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthLogin, adminAuthRegister } from './auth';
+import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
 import { adminQuizCreate, adminQuizRemove } from './quiz';
 
 // Set up web app
@@ -67,6 +67,17 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   }
   res.json(ret);
 });
+
+// authAdminUserDetails Request
+app.get('/v1/admin/user/details', (req: Request, res: Response) => {
+  const { token, authUserId } = req.body;
+  const ret = adminUserDetails(token, authUserId);
+
+  if ('error' in ret) {
+    return res.status(400).json(ret);
+  }
+  res.json(ret);
+})
 
 /// ///////////////////////// other.ts ///////////////////////////////
 
