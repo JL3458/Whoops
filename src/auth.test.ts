@@ -51,6 +51,21 @@ export function userDetailsRequest(token: string) {
   return JSON.parse(res.body.toString());
 }
 
+export function authLogoutRequest(token: string) {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/admin/auth/logout',
+    {
+      json: {
+        token: token
+      }
+    }
+  );
+  return JSON.parse(res.body as string);
+}
+
+/// //////////////////////////// Tests /////////////////////////////////
+
 beforeEach(() => {
   clearRequest();
 });
@@ -165,5 +180,36 @@ describe('Tests for adminUserDetails', () => {
     expect(userDetailsRequest(authId1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
     expect(clearRequest()).toEqual({});
     expect(userDetailsRequest(authId1.token)).toEqual(ERROR);
+  });
+});
+
+describe('Tests for adminAuthlogout', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty or invalid', () => {
+    expect(authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez')).toEqual({ token: expect.any(String) });
+    expect(authLogoutRequest('')).toEqual(ERROR);
+  });
+
+  test('Valid tests', () => {
+    const token1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(token1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
+    expect(authLogoutRequest(token1.token)).toEqual({});
+
+    // Returns error since user has been logged out
+    expect(userDetailsRequest(token1.token)).toEqual(ERROR);
+  });
+
+  test('Valid tests with clear', () => {
+    const token1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(authLogoutRequest(token1.token)).toEqual({});
+    const token2 = authLoginRequest('ValidEmail1@mail.com', 'password123');
+    expect(token2).toEqual({ token: expect.any(String) });
+    expect(clearRequest()).toEqual({});
+
+    // Now, unable to logout as the respective users have been cleared
+    expect(authLogoutRequest(token2.token)).toEqual(ERROR);
   });
 });
