@@ -33,16 +33,28 @@ function CheckValidUserId(authUserId: number): boolean {
   return false;
 }
 
-export function adminQuizList(authUserId: number): QuizListReturn | ErrorReturn {
+export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   const data = getData();
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
+  // Checking if a token exists
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if there is a valid token
+  if (!tempToken || 
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) 
+    === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId)
+  if (CheckValidUserId(userToken.userId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
-
   // Retrieves the names of the quizzes and respective quizIds
-  const quizzes = data.quizzes.filter((quiz) => quiz.userId === authUserId);
+  const quizzes = data.quizzes.filter((quiz) => quiz.userId === userToken.userId);
 
   // returns the quiz information in the format
   /* quizzes: {
