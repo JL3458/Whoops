@@ -9,8 +9,8 @@ export interface user {
 }
 
 export interface quiz {
-  quizId: string,
-  name: number,
+  quizId: number,
+  name: string,
   description: string,
   timeCreated: number,
   timeLastEdited: number,
