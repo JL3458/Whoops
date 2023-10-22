@@ -9,8 +9,8 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthLogin, adminAuthRegister, adminUserDetails} from './auth';
-import { adminQuizCreate, adminQuizList, adminQuizRemove} from './quiz';
+import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
+import { adminQuizCreate, adminQuizList, adminQuizRemove } from './quiz';
 
 // Set up web app
 const app = express();
