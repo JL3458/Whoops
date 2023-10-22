@@ -101,9 +101,9 @@ export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn
   const tempToken = JSON.parse(decodeURIComponent(token));
 
   // Checks if there is a valid token
-  if (!tempToken || 
-    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) 
-    === undefined) {
+  if (!tempToken ||
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
+    undefined) {
     return { error: 'Token is empty or invalid' };
   }
   // assigns the current token to a usertoken variable
