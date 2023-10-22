@@ -138,6 +138,44 @@ export function adminAuthLogout(token: string): ErrorReturn | object {
   return {};
 }
 
+export function adminUpdateUserDetails(token: string, email: string, nameFirst: string, nameLast: string): ErrorReturn | object {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // finds the user that is corresponding to the token and updates its details
+  const userToUpdate = data.users.find((user) => user.userId === tempToken.userId);
+
+  // Checking if email is valid
+  if (validator.isEmail(email) === false) {
+    return { error: 'Invalid Entry' };
+  }
+  // Checking if email is in use by another user that is not the current authorised user
+  for (const user of data.users) {
+    if (user.email === email && userToUpdate.email !== email) {
+      return { error: 'Email Already in Use' };
+    }
+  }
+  // Checking if first and last name meet the required conditions
+  if (nameFirst.length < 2 || nameFirst.length > 20 || PATTERN.test(nameFirst) === false) {
+    return { error: 'Invalid First Name' };
+  }
+  if (nameLast.length < 2 || nameLast.length > 20 || PATTERN.test(nameLast) === false) {
+    return { error: 'Invalid Last Name' };
+  }
+
+  Object.assign(userToUpdate, { email: email, nameFirst: nameFirst, nameLast: nameLast });
+  setData(data);
+
+  return {};
+}
+
 /// /////////////////////////// Helper Functions ////////////////////////////////
 
 function isEqual(currentToken: token, tempToken: token): boolean {
