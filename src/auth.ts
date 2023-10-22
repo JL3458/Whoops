@@ -53,7 +53,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   }
 
   const Id = data.users.length + 1;
-  data.users.push({ userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 });
+  data.users.push({ userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0, oldPasswords: [password] });
   const newToken = startSession(Id);
   const encodeToken = encodeURIComponent(JSON.stringify(newToken));
   setData(data);
@@ -172,6 +172,46 @@ export function adminUpdateUserDetails(token: string, email: string, nameFirst: 
 
   Object.assign(userToUpdate, { email: email, nameFirst: nameFirst, nameLast: nameLast });
   setData(data);
+
+  return {};
+}
+
+export function adminUserPassword(token: string, oldPassword: string, newPassword: string): ErrorReturn | object {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // finds the user that is corresponding to the token and updates its details
+  const userToUpdate = data.users.find((user) => user.userId === tempToken.userId);
+
+  // Check if Old Password is not the correct old password
+  if (userToUpdate.password !== oldPassword) {
+    return { error: 'Old Password is not the correct old password' };
+  }
+
+  // Check if Old Password and New Password match exactly
+  if (oldPassword === newPassword) {
+    return { error: 'Old Password and New Password match exactly' };
+  }
+
+  // Check if New Password has already been used before by this user
+  if (userToUpdate.oldPasswords.find(currentOldPassword => currentOldPassword === newPassword) !== undefined) {
+    return { error: 'New Password has already been used before by this user' };
+  }
+
+  // Checking if new password meets the required conditions
+  if (newPassword.length < 8 || LETTERS.test(newPassword) === false || NUMS.test(newPassword) === false) {
+    return { error: 'Invalid  New Password' };
+  }
+
+  userToUpdate.password = newPassword;
+  userToUpdate.oldPasswords.push(newPassword);
 
   return {};
 }
