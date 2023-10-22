@@ -7,7 +7,8 @@ export function clear() {
     users: [],
     quizzes: [],
     tokens: [],
-    trash: []
+    trash: [],
+    questions: [],
   };
 
   // Setting data dataStore to original state

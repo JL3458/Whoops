@@ -1,6 +1,6 @@
-import { clear } from './other';
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
+import { clear } from './other';
 const SERVER_URL = `${url}:${port}`;
 
 export function clearRequest() {
