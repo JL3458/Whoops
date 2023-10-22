@@ -19,6 +19,19 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   return JSON.parse(request1.body as string);
 }
 
+export function adminQuizListRequest(token: string) {
+  const res = request(
+    'GET', 
+    SERVER_URL + '/v1/admin/quiz/list',
+    {
+      qs: {
+        token
+      }
+    }
+  )
+  return JSON.parse(res.body.toString())
+}
+
 /// ////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreate', () => {

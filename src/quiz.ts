@@ -62,10 +62,10 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
         name:
     } */
   return {
-    quizzes: quizzes.map((quiz) => ({
-      quizId: quiz.quizId,
-      name: quiz.name,
-    })),
+    quizzes: {
+      quizId: quizzes.quizId,
+      name: quizzes.name,
+    },
   };
 }
 
