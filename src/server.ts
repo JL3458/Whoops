@@ -158,11 +158,10 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   res.json(response);
 });
 
-///////////////////////////// question.ts ///////////////////////////////
+/// ////////////////////////// question.ts ///////////////////////////////
 
 // adminQuizCreateQuestion Request
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
-  
   const quizId = parseInt(req.params.quizid);
   const { token, question } = req.body;
 
@@ -177,8 +176,6 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   }
   res.json(response);
 });
-
-
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
