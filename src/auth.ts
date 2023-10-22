@@ -90,8 +90,22 @@ export function adminAuthLogin(email: string, password: string): AuthReturn | Er
   };
 }
 
-export function adminUserDetails(authUserId: number): ErrorReturn | UserDetailsReturn {
+export function adminUserDetails(token: string, authUserId: number): ErrorReturn | UserDetailsReturn {
   const data = getData();
+
+  // Checking if a token exists
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if there is a valid token
+  if (!tempToken || 
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) 
+    === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
 
   // Checking if authUserId refers to an invalid user
   const user = data.users.find(({ userId }) => userId === authUserId);
