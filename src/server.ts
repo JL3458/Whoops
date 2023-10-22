@@ -10,7 +10,7 @@ import path from 'path';
 import process from 'process';
 import { clear } from './other';
 import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
-import { adminQuizCreate, adminQuizRemove } from './quiz';
+import { adminQuizCreate, adminQuizList, adminQuizRemove } from './quiz';
 
 // Set up web app
 const app = express();
@@ -90,6 +90,20 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 /// ///////////////////////// quiz.ts ///////////////////////////////
 
+// adminQuizList Request
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizList(token);
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
 // adminQuizCreate Request
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
