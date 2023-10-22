@@ -177,23 +177,24 @@ export function adminQuizInfo(authUserId: number, quizId: number): QuizInfoRetur
   };
 }
 
-export function adminQuizNameUpdate(authUserId: number, quizId: number, name: string): ErrorReturn | null {
+export function adminQuizNameUpdate(token: string, quizId: number, name: string): ErrorReturn | null {
   const data = getData();
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
-    return { error: 'AuthUserId is not a valid user' };
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
   }
 
-  // Checks if quizId refers to an invalid quiz
-  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  if (!quiz) {
-    return { error: 'quizId does not refer to a valid quiz' };
-  }
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
 
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
   // Checks whether quizId does not refer to a quiz that this user owns
-  if (quiz.userId !== authUserId) {
-    return { error: 'quizId does not refer to a quiz that this user owns' };
+  const tempQuiz = data.quizzes.find((quiz) => quiz.name === name);
+  if ((tempQuiz !== undefined && tempQuiz.userId === tempToken.userId)) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Checks if name contains invalid characters. Valid characters are alphanumeric and spaces
@@ -208,7 +209,7 @@ export function adminQuizNameUpdate(authUserId: number, quizId: number, name: st
   }
 
   // Checks if name is already used by the current logged in user for another quiz
-  const otherQuizWithSameName = data.quizzes.find((q) => q.userId === authUserId && q.quizId !== quizId && q.name === name);
+  const otherQuizWithSameName = data.quizzes.find((q) => q.userId === tempToken.userId && q.quizId !== quizId && q.name === name);
   if (otherQuizWithSameName) {
     return { error: 'Name is already used by another quiz made by the user' };
   }

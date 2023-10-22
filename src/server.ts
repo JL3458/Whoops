@@ -10,7 +10,7 @@ import path from 'path';
 import process from 'process';
 import { clear } from './other';
 import { adminAuthLogin, adminAuthRegister } from './auth';
-import { adminQuizCreate, adminQuizRemove } from './quiz';
+import { adminQuizCreate, adminQuizRemove, adminQuizNameUpdate } from './quiz';
 
 // Set up web app
 const app = express();
@@ -101,6 +101,22 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
     return res.status(400).json(response);
   } else if ('Token is empty or invalid' in response) {
     return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizNmaeUpdate Request
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, name } = req.body;
+  const response = adminQuizNameUpdate(token, quizId, name);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
   } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
     return res.status(403).json(response);
   }
