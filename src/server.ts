@@ -70,13 +70,15 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // authAdminUserDetails Request
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const { token } = req.body;
-  const ret = adminUserDetails(token);
-
-  if ('error' in ret) {
-    return res.status(400).json(ret);
+  // data is passed into a query string
+  const token  = req.query.token as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminUserDetails(token);
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
   }
-  res.json(ret);
+  res.json(response);
 })
 
 /// ///////////////////////// other.ts ///////////////////////////////

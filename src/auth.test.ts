@@ -44,11 +44,11 @@ export function userDetailsRequest(token: string) {
     SERVER_URL + '/v1/admin/user/details',
     {
       qs: {
-        token: token,
+        token
       }
     }
   );
-  return JSON.parse(res.body as string)
+  return JSON.parse(res.body.toString())
 }
 
 beforeEach(() => {
