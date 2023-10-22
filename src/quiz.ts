@@ -5,10 +5,12 @@ interface ErrorReturn {
 }
 
 interface QuizListReturn {
-    quizzes: {
-        quizId: number,
-        name: string
+    quizzes: [
+      {
+      quizId: number,
+      name: string
     }
+  ]
 }
 
 interface QuizCreateReturn {
@@ -17,10 +19,10 @@ interface QuizCreateReturn {
 
 interface QuizInfoReturn {
     quizId: number,
-    name: number,
+    name: string,
     timeCreated: number,
     timeLastEdited: number,
-    description: number,
+    description: string,
 }
 
 // Helper Functions
@@ -44,28 +46,29 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   const tempToken = JSON.parse(decodeURIComponent(token));
 
   // Checks if there is a valid token
-  if (!tempToken || 
-    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) 
-    === undefined) {
+  if (!tempToken ||
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
+    undefined) {
     return { error: 'Token is empty or invalid' };
   }
-  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId)
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
   if (CheckValidUserId(userToken.userId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
   // Retrieves the names of the quizzes and respective quizIds
-  const quizzes = data.quizzes.filter((quiz) => quiz.userId === userToken.userId);
+  const quizDetails = data.quizzes.filter((quiz) => quiz.userId === userToken.userId);
 
   // returns the quiz information in the format
   /* quizzes: {
         quizId:
         name:
     } */
+  const quizArray = quizDetails.map((quiz) => ({
+    quizId: quiz.quizId,
+    name: quiz.name
+  })) as QuizListReturn['quizzes'];
   return {
-    quizzes: {
-      quizId: quizzes.quizId,
-      name: quizzes.name,
-    },
+    quizzes: quizArray
   };
 }
 
@@ -229,8 +232,6 @@ export function adminQuizNameUpdate(authUserId: number, quizId: number, name: st
   quiz.name = name;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
-
-  return {};
 }
 
 export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, description: string): ErrorReturn | null {
@@ -262,5 +263,4 @@ export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, d
     quizToUpdate.description = description;
     quizToUpdate.timeLastEdited = Math.floor(Date.now() / 1000);
   }
-  return {};
 }

@@ -77,7 +77,7 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 /// ///////////////////////// quiz.ts ///////////////////////////////
 
-// adminQuizList Request 
+// adminQuizList Request
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   // data is passed into a query string
   const token = req.query.token as string;
@@ -90,7 +90,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
     return res.status(400).json(response);
   }
   res.json(response);
-})
+});
 // adminQuizCreate Request
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
