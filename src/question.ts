@@ -101,6 +101,8 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     points: question.points,
     answers: question.answers
   };
+  tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
   data.questions.push(tempQuestion);
   setData(data);
 

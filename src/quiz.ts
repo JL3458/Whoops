@@ -1,5 +1,7 @@
 import { getData, setData } from './dataStore';
 
+/// //////////////////////// Functions Return Interface ///////////////////////////////////
+
 interface ErrorReturn {
     error: string;
 }
@@ -25,7 +27,7 @@ interface QuizInfoReturn {
     description: string,
 }
 
-// Helper Functions
+/// //////////////////////// Helper Functions ///////////////////////////////////
 
 function CheckValidUserId(authUserId: number): boolean {
   const data = getData();
@@ -34,6 +36,8 @@ function CheckValidUserId(authUserId: number): boolean {
   }
   return false;
 }
+
+/// //////////////////////// Main Functions ///////////////////////////////////
 
 export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   const data = getData();
@@ -264,3 +268,54 @@ export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, d
     quizToUpdate.timeLastEdited = Math.floor(Date.now() / 1000);
   }
 }
+
+export function adminQuizTransfer(token: string, quizId: number, userEmail: string) {
+  const data = getData();
+
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Checks if quizId refers to an invalid quiz
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+  }
+
+  // Check if userEmail is valid
+  const tempTargertUser = data.users.find((user) => user.email === userEmail);
+  if (tempTargertUser === undefined) {
+    return { error: 'userEmail is not a real user' };
+  }
+
+  // Check if userEmail is the current logged in user
+  if (tempTargertUser !== undefined && tempTargertUser.userId === tempToken.userId) {
+    return { error: 'userEmail is the current logged in user' };
+  }
+
+  // Check if Quiz ID refers to a quiz that has a name that is already used by the target user
+  const targetUserQuizzes = data.quizzes.filter((quiz) => quiz.userId === tempTargertUser.userId);
+  if (targetUserQuizzes.find((quiz) => quiz.name === tempQuiz.name) !== undefined) {
+    return { error: 'The target user already has a quiz with the same name' };
+  }
+
+  tempQuiz.userId = tempTargertUser.userId;
+  setData(data);
+
+  return {};
+}
+
+/// //////////////////////////////  Epilouge  ///////////////////////////////////
