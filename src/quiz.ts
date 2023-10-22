@@ -153,18 +153,24 @@ export function adminQuizRemove(token: string, quizId: number) {
   return {};
 }
 
-export function adminQuizInfo(authUserId: number, quizId: number): QuizInfoReturn | ErrorReturn {
+export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorReturn {
   const data = getData();
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
-    return { error: 'Invalid User' };
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
   }
 
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   // Checks whether quizId refers to a valid quiz and refers to a quiz that the current user owns
-  if (quiz === undefined || quiz.userId !== authUserId) {
-    return { error: 'Quiz not found or not owned by the user' };
+  if (tempQuiz !== undefined && tempQuiz.userId === tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Returns quiz info
@@ -193,7 +199,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   }
   // Checks whether quizId does not refer to a quiz that this user owns
   const tempQuiz = data.quizzes.find((quiz) => quiz.name === name);
-  if ((tempQuiz !== undefined && tempQuiz.userId === tempToken.userId)) {
+  if (tempQuiz !== undefined && tempQuiz.userId === tempToken.userId) {
     return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
