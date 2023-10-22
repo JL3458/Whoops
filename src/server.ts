@@ -10,7 +10,7 @@ import path from 'path';
 import process from 'process';
 import { clear } from './other';
 import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUpdateUserDetails, adminUserDetails, adminUserPassword } from './auth';
-import { adminQuizCreate, adminQuizList, adminQuizRemove } from './quiz';
+import { adminQuizCreate, adminQuizList, adminQuizRemove, adminQuizTransfer } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
 // Set up web app
@@ -189,6 +189,22 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
     return res.status(401).json(response);
   } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
     return res.status(403).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizTransfer Request
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, userEmail } = req.body;
+  const response = adminQuizTransfer(token, quizId, userEmail);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
   }
   res.json(response);
 });
