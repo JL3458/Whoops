@@ -38,6 +38,19 @@ export function authLoginRequest(email: string, password: string) {
   return JSON.parse(res.body as string);
 }
 
+export function userDetailsRequest(token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/user/details',
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.body.toString());
+}
+
 beforeEach(() => {
   clearRequest();
 });
@@ -125,5 +138,32 @@ describe('Tests for adminAuthlogin', () => {
     // Now, unable to login as the respective users have been cleared
     expect(authLoginRequest('ValidEmail1@mail.com', 'password456')).toEqual(ERROR);
     expect(authLoginRequest('ValidEmail2@mail.com', 'pass1234')).toEqual(ERROR);
+  });
+});
+
+describe('Tests for adminUserDetails', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Invalid token', () => {
+    expect(userDetailsRequest('34698743')).toEqual(ERROR);
+    expect(userDetailsRequest('234987')).toEqual(ERROR);
+  });
+
+  test('Valid Tests', () => {
+    const authId1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(authId1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
+    const authId2 = authRegisterRequest('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzalez');
+    expect(authLoginRequest('ValidEmail2@mail.com', 'password123')).toEqual({ token: expect.any(String) });
+    expect(authLoginRequest('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
+    expect(userDetailsRequest(authId2.token)).toEqual({ user: { userId: expect.any(Number), name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1 } });
+  });
+
+  test('Sample Test userDetails with clear()', () => {
+    const authId1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(authId1.token)).toEqual({ user: { userId: expect.any(Number), name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 } });
+    expect(clearRequest()).toEqual({});
+    expect(userDetailsRequest(authId1.token)).toEqual(ERROR);
   });
 });
