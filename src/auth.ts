@@ -90,7 +90,7 @@ export function adminAuthLogin(email: string, password: string): AuthReturn | Er
   };
 }
 
-export function adminUserDetails(token: string, authUserId: number): ErrorReturn | UserDetailsReturn {
+export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn {
   const data = getData();
 
   // Checking if a token exists
@@ -106,19 +106,18 @@ export function adminUserDetails(token: string, authUserId: number): ErrorReturn
     === undefined) {
     return { error: 'Token is empty or invalid' };
   }
+  // assigns the current token to a usertoken variable
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
 
-  // Checking if authUserId refers to an invalid user
-  const user = data.users.find(({ userId }) => userId === authUserId);
-  if (user === undefined) {
-    return { error: 'Invalid Entry' };
-  }
+  // finds the user that is corresponding to the token
+  const user = data.users.find((user) => user.userId === userToken.userId);
 
   // Concatenating first and last name
   const fullName = user.nameFirst + ' ' + user.nameLast;
 
   return {
     user: {
-      userId: authUserId,
+      userId: user.userId,
       name: fullName,
       email: user.email,
       numSuccessfulLogins: user.numSuccessfulLogins,

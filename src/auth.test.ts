@@ -38,14 +38,13 @@ export function authLoginRequest(email: string, password: string) {
   return JSON.parse(res.body as string);
 }
 
-export function userDetailsRequest(token: string, authUserId: number) {
+export function userDetailsRequest(token: string) {
   const res = request(
     'GET',
     SERVER_URL + '/v1/admin/user/details',
     {
       qs: {
         token: token,
-        authUserId: authUserId
       }
     }
   );
@@ -147,26 +146,26 @@ describe('Tests for adminUserDetails', () => {
       clearRequest();
   });
 
-  test ('Invalid UserId', () => {
-      expect(userDetailsRequest("token", 0)).toEqual(ERROR);
-      expect(userDetailsRequest("token", 10)).toEqual(ERROR);
+  test ('Invalid token', () => {
+      expect(userDetailsRequest("token")).toEqual(ERROR);
+      expect(userDetailsRequest("token")).toEqual(ERROR);
       
   });
 
   test ('Valid Tests', () => {
       const authId1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
-      expect(userDetailsRequest(authId1.token, authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+      expect(userDetailsRequest(authId1.token)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
       const authId2 = authRegisterRequest('ValidEmail2@mail.com', 'password123', 'Gavi', 'Gonzalez');
       expect(authLoginRequest('ValidEmail2@mail.com', 'password123')).toEqual({token: expect.any(String) });
       expect(authLoginRequest('ValidEmail2@mail.com', 'password789')).toEqual(ERROR);
-      expect(userDetailsRequest(authId2.token, authId2.authUserId)).toEqual({user: {userId: 20, name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1}});
+      expect(userDetailsRequest(authId2.token)).toEqual({user: {userId: 20, name: 'Gavi Gonzalez', email: 'ValidEmail2@mail.com', numSuccessfulLogins: 2, numFailedPasswordsSinceLastLogin: 1}});
   })
 
   test ('Sample Test userDetails with clear()', () => {
       const authId1 = authRegisterRequest('ValidEmail1@mail.com', 'password123', 'Pedro', 'Gonzalez');
-      expect(userDetailsRequest(authId1.token, authId1.authUserId)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
+      expect(userDetailsRequest(authId1.token)).toEqual({user: {userId: 10, name: 'Pedro Gonzalez', email: 'ValidEmail1@mail.com', numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0}});
       expect(clearRequest()).toEqual({});
-      expect(userDetailsRequest(authId1.token, authId1.authUserId)).toEqual(ERROR);
+      expect(userDetailsRequest(authId1.token)).toEqual(ERROR);
   })
 });
 

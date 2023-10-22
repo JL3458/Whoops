@@ -70,8 +70,8 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // authAdminUserDetails Request
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  const { token, authUserId } = req.body;
-  const ret = adminUserDetails(token, authUserId);
+  const { token } = req.body;
+  const ret = adminUserDetails(token);
 
   if ('error' in ret) {
     return res.status(400).json(ret);
