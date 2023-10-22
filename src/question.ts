@@ -21,7 +21,7 @@ interface QuestionCreateReturn {
 
 /// //////////////////// Main Functions ///////////////////////////
 
-export function adminQuizCreateQuestion (token: number, quizId: number, question: questionBody): QuestionCreateReturn | ErrorReturn {
+export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody): QuestionCreateReturn | ErrorReturn {
   const data = getData();
 
   // If Token is an empty string
