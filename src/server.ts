@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUserDetails } from './auth';
+import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUpdateUserDetails, adminUserDetails } from './auth';
 import { adminQuizCreate, adminQuizList, adminQuizRemove } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
@@ -105,6 +105,23 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminUpdateUserDetails Request
+app.put('/v1/admin/user/details', (req: Request, res: Response) => {
+  // email, nameFirst, nameLast values obtained from body
+  const { token, email, nameFirst, nameLast } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUpdateUserDetails(token, email, nameFirst, nameLast);
+
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
 /// ///////////////////////// other.ts ///////////////////////////////
 
 // Clear Request
@@ -128,6 +145,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
 // adminQuizCreate Request
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
