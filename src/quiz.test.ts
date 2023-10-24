@@ -29,6 +29,10 @@ export function adminQuizTransferRequest(token: string, quizid: number, userEmai
   return JSON.parse(request1.body as string);
 }
 
+export function adminQuizViewTrashRequest(token: string) {
+  const res = request('GET', SERVER_URL + '/v1/admin/quiz/trash', { qs: { token } });
+  return JSON.parse(res.body.toString());
+}
 /// ////////////////////// Main Tests /////////////////////////////
 
 describe('Tests for adminQuizList', () => {
@@ -255,7 +259,7 @@ describe('Tests of adminQuizRemove', () => {
   });
 });
 
-describe('Tests of adminQuizRemove', () => {
+describe('Tests of adminQuizTransfer', () => {
   beforeEach(() => {
     clearRequest();
   });
@@ -314,8 +318,57 @@ describe('Tests of adminQuizRemove', () => {
   });
 });
 
+describe('Tests for adminQuizViewTrash', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Invalid token', () => {
+    expect(adminQuizViewTrashRequest('234097634')).toEqual(ERROR);
+    expect(adminQuizViewTrashRequest('1248734')).toEqual(ERROR);
+    expect(adminQuizViewTrashRequest('24763')).toEqual(ERROR);
+    expect(adminQuizViewTrashRequest('5487')).toEqual(ERROR);
+  });
+
+  test('Valid Test quizViewTrash with 1 quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizRemoveRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    const quiz2 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing');
+    expect(adminQuizRemoveRequest(newUser2.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser2.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+  });
+
+  test('Valid Test quizViewTrash with multiple quizzes', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Sample Quiz Testing');
+    const quiz2 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 2', 'Testing');
+    expect(adminQuizRemoveRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser1.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }, { quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    const quiz3 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'Sample Quiz Testing');
+    const quiz4 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing');
+    const quiz5 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 3', 'Testing?');
+    const quiz6 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 4', 'Testing!');
+    expect(adminQuizRemoveRequest(newUser2.token, quiz3.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser2.token, quiz4.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser2.token, quiz5.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser2.token, quiz6.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser2.token)).toEqual({
+      quizzes:
+            [{ quizId: expect.any(Number), name: 'Test Quiz 1' },
+              { quizId: expect.any(Number), name: 'Test Quiz 2' },
+              { quizId: expect.any(Number), name: 'Test Quiz 3' },
+              { quizId: expect.any(Number), name: 'Test Quiz 4' }
+            ]
+    });
+  });
+});
 /// /////////////////////// Epilouge //////////////////////////////
-// TODO: Add relevant tests calling the server.ts files
+// TODO: Add relevant tests calling the server.ts files.
 
 test('Nice Test', () => {
   expect(1 + 1).toEqual(2);
