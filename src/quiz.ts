@@ -346,7 +346,7 @@ export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorR
   if (CheckValidUserId(userToken.userId)) {
     return { error: 'AuthUserId is not a valid user' };
   }
-  // Retrieves the names of the quizzes and respective quizIds
+  // Retrieves the names of the quizzes and respective quizIds from the trash
   const quizDetails = data.trash.filter((quiz) => quiz.userId === userToken.userId);
 
   // returns the quiz information in the format
