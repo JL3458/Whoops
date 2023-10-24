@@ -38,9 +38,9 @@ export function adminQuizRestoreRequest (token: string, quizid: number) {
   const res = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/restore`, { json: { token, quizid } });
   return JSON.parse(res.body as string);
 }
-
+// Needs to fix this array
 export function adminQuizTrashEmptyRequest(token: string, quizid: Array) {
-  const res = request('DELETE', SERVER_URL + `/v1/admin/quiz/trash/empty`, { json: { token, quizid[]} });
+  const res = request('DELETE', SERVER_URL + `/v1/admin/quiz/trash/empty`, { json: { token, quizid} });
   return JSON.parse(res.body as string);
 }
 
