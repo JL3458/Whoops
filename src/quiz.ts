@@ -343,11 +343,7 @@ export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorR
   // Retrieves the names of the quizzes and respective quizIds from the trash
   const quizDetails = data.trash.filter((quiz) => quiz.userId === userToken.userId);
 
-  // returns the quiz information in the format
-  /* quizzes: {
-        quizId:
-        name:
-    } */
+  // returns the quiz information in the correct format
   const quizArray = quizDetails.map((quiz) => ({
     quizId: quiz.quizId,
     name: quiz.name
@@ -388,14 +384,14 @@ export function adminQuizRestore(token: string, quizId: number) {
   const tempQuizIndex = data.trash.findIndex((quiz) => quiz.quizId === quizId);
 
   // removes the targetted quiz from the trash array.
-  data.trash.splice(tempQuizIndex,1);
+  data.trash.splice(tempQuizIndex, 1);
 
   // updates the timeLastEdited of the target quiz.
   tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   // adds the targetted quiz onto the end of the quiz array.
   data.quizzes.push(tempQuiz);
-  
+
   setData(data);
 
   return {};

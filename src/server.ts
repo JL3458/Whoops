@@ -9,21 +9,21 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { 
-  adminAuthLogin, 
-  adminAuthLogout, 
-  adminAuthRegister, 
-  adminUpdateUserDetails, 
-  adminUserDetails, 
-  adminUserPassword 
+import {
+  adminAuthLogin,
+  adminAuthLogout,
+  adminAuthRegister,
+  adminUpdateUserDetails,
+  adminUserDetails,
+  adminUserPassword
 } from './auth';
-import { 
-  adminQuizCreate, 
-  adminQuizList, 
-  adminQuizRemove, 
-  adminQuizRestore, 
-  adminQuizTransfer, 
-  adminQuizViewTrash 
+import {
+  adminQuizCreate,
+  adminQuizList,
+  adminQuizRemove,
+  adminQuizRestore,
+  adminQuizTransfer,
+  adminQuizViewTrash
 } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
