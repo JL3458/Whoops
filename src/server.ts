@@ -9,8 +9,22 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUpdateUserDetails, adminUserDetails, adminUserPassword } from './auth';
-import { adminQuizCreate, adminQuizList, adminQuizRemove, adminQuizTransfer, adminQuizViewTrash } from './quiz';
+import {
+  adminAuthLogin,
+  adminAuthLogout,
+  adminAuthRegister,
+  adminUpdateUserDetails,
+  adminUserDetails,
+  adminUserPassword
+} from './auth';
+import {
+  adminQuizCreate,
+  adminQuizList,
+  adminQuizRemove,
+  adminQuizRestore,
+  adminQuizTransfer,
+  adminQuizViewTrash
+} from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
 // Set up web app
@@ -218,7 +232,25 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const response = adminQuizViewTrash(token);
 
   // handles an error
-  if ('error' in response) {
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizRestore Request
+app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token } = req.body;
+  const response = adminQuizRestore(token, quizId);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
     return res.status(400).json(response);
   }
   res.json(response);
