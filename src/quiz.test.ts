@@ -9,6 +9,11 @@ const ERROR = { error: expect.any(String) };
 
 /// /////////////////// Helper Functions //////////////////////
 
+export function adminQuizListRequest(token: string) {
+  const res = request('GET', SERVER_URL + '/v1/admin/quiz/list', { qs: { token } });
+  return JSON.parse(res.body.toString());
+}
+
 export function adminQuizCreateRequest(token: string, name: string, description: string) {
   const request1 = request('POST', SERVER_URL + '/v1/admin/quiz', { json: { token: token, name: name, description: description } });
   return JSON.parse(request1.body as string);
@@ -19,11 +24,6 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   return JSON.parse(request1.body as string);
 }
 
-export function adminQuizListRequest(token: string) {
-  const res = request('GET', SERVER_URL + '/v1/admin/quiz/list', { qs: { token } });
-  return JSON.parse(res.body.toString());
-}
-
 export function adminQuizTransferRequest(token: string, quizid: number, userEmail: string) {
   const request1 = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/transfer`, { json: { token: token, userEmail: userEmail } });
   return JSON.parse(request1.body as string);
@@ -32,6 +32,11 @@ export function adminQuizTransferRequest(token: string, quizid: number, userEmai
 export function adminQuizViewTrashRequest(token: string) {
   const res = request('GET', SERVER_URL + '/v1/admin/quiz/trash', { qs: { token } });
   return JSON.parse(res.body.toString());
+}
+
+export function adminQuizRestore (token: string, quizid: number) {
+  const res = request('POST', SERVER_URL + '/v1/admin/quiz/${quizid}/question', { json: { token, quizid}});
+  return JSON.parse(res.body as string)
 }
 /// ////////////////////// Main Tests /////////////////////////////
 
