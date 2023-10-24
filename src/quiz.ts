@@ -396,4 +396,35 @@ export function adminQuizRestore(token: string, quizId: number) {
 
   return {};
 }
+
+export function adminQuizTrashEmpty (token: string, quizId: Array) {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);
+
+  // Checks if quizId refers to an invalid quiz
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+  }
+
+  // Removes the quiz from quizes list
+  const quizIndex = data.trash.findIndex((quiz) => quiz.quizId === quizId);
+  data.trash.splice(quizIndex, 1);
+
+  setData(data);
+
+  return {};
+}
 /// //////////////////////////////  Epilogue ///////////////////////////////////

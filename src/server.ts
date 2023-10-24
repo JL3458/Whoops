@@ -23,6 +23,7 @@ import {
   adminQuizRemove,
   adminQuizRestore,
   adminQuizTransfer,
+  adminQuizTrashEmpty,
   adminQuizViewTrash
 } from './quiz';
 import { adminQuizCreateQuestion } from './question';
@@ -255,6 +256,21 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
+app.delete('v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  const { token, quizId} = req.body;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizTrashEmpty(token, quizId);
+
+  if ('quizId is not of a valid quiz' in response) {
+    return res.status(400).json(response);
+  } else if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  }
+  res.json(response);
+})
 
 /// ////////////////////////// question.ts ///////////////////////////////
 
