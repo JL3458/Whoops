@@ -10,7 +10,7 @@ import path from 'path';
 import process from 'process';
 import { clear } from './other';
 import { adminAuthLogin, adminAuthLogout, adminAuthRegister, adminUpdateUserDetails, adminUserDetails, adminUserPassword } from './auth';
-import { adminQuizCreate, adminQuizList, adminQuizRemove, adminQuizTransfer } from './quiz';
+import { adminQuizCreate, adminQuizList, adminQuizRemove, adminQuizTransfer, adminQuizViewTrash } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
 // Set up web app
@@ -204,6 +204,21 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
     return res.status(403).json(response);
   } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizViewTrash Request
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizViewTrash(token);
+
+  // handles an error
+  if ('error' in response) {
     return res.status(400).json(response);
   }
   res.json(response);

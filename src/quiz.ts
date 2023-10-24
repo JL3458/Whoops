@@ -27,6 +27,14 @@ interface QuizInfoReturn {
     description: string,
 }
 
+interface QuizViewTrashReturn {
+    quizzes: [
+      {
+      quizId: number,
+      name: string
+    }
+  ]
+}
 /// //////////////////////// Helper Functions ///////////////////////////////////
 
 function CheckValidUserId(authUserId: number): boolean {
@@ -316,6 +324,43 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
   setData(data);
 
   return {};
+}
+
+export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorReturn {
+  const data = getData();
+
+  // Checking if a token exists
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if there is a valid token
+  if (!tempToken ||
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
+    undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
+  if (CheckValidUserId(userToken.userId)) {
+    return { error: 'AuthUserId is not a valid user' };
+  }
+  // Retrieves the names of the quizzes and respective quizIds
+  const quizDetails = data.trash.filter((quiz) => quiz.userId === userToken.userId);
+
+  // returns the quiz information in the format
+  /* quizzes: {
+        quizId:
+        name:
+    } */
+  const quizArray = quizDetails.map((quiz) => ({
+    quizId: quiz.quizId,
+    name: quiz.name
+  })) as QuizViewTrashReturn['quizzes'];
+  return {
+    quizzes: quizArray
+  };
 }
 
 /// //////////////////////////////  Epilouge  ///////////////////////////////////
