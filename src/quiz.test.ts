@@ -368,7 +368,7 @@ describe('Tests for adminQuizViewTrash', () => {
   });
 });
 /// /////////////////////// Epilouge //////////////////////////////
-// TODO: Add relevant tests calling the server.ts files
+// TODO: Add relevant tests calling the server.ts files.
 
 test('Nice Test', () => {
   expect(1 + 1).toEqual(2);
