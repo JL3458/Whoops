@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { getData, setData, question} from './dataStore';
 
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
@@ -135,7 +135,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     description: description,
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    userId: tempToken.userId
+    userId: tempToken.userId,
+    questions: [] as question[]
   };
 
   data.quizzes.push(tempQuizStorage);

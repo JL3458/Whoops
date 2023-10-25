@@ -63,8 +63,8 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     return { error: 'Question duration must be a positive number' };
   }
 
-  // Checks if totalQuestionDuration exceeds 3 mintues
-  const totalQuestionDuration = data.questions.filter((question) => question.quizId === quizId).reduce((sum, currQues) => sum + currQues.duration, 0);
+  // Checks if total duration of all questions are above 3 minutes
+  const totalQuestionDuration = tempQuiz.questions.filter((question) => question.quizId === quizId).reduce((sum, currQues) => sum + currQues.duration, 0);
   if ((totalQuestionDuration + question.duration) > 180) {
     return { error: 'The sum of the question durations in the quiz exceeds 3 minutes' };
   }
@@ -92,7 +92,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     return { error: 'There are no correct answers' };
   }
 
-  const questionIdGenerator = data.questions.length + 1;
+  const questionIdGenerator = tempQuiz.questions.length + 1;
   const tempQuestion = {
     quizId: quizId,
     questionId: questionIdGenerator,
@@ -101,9 +101,9 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     points: question.points,
     answers: question.answers
   };
+  tempQuiz.questions.push(tempQuestion);
   tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
-  data.questions.push(tempQuestion);
   setData(data);
 
   return {

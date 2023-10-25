@@ -9,20 +9,6 @@ export interface user {
   oldPasswords: string[]
 }
 
-export interface quiz {
-  quizId: number,
-  name: string,
-  description: string,
-  timeCreated: number,
-  timeLastEdited: number,
-  userId: number
-}
-
-export interface token {
-  userId: number,
-  sessionId: string
-}
-
 export interface answer {
   answerTitle: string,
   correct: boolean
@@ -37,12 +23,26 @@ export interface question {
   answers: answer[]
 }
 
+export interface quiz {
+  quizId: number,
+  name: string,
+  description: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  userId: number,
+  questions: question[]
+}
+
+export interface token {
+  userId: number,
+  sessionId: string
+}
+
 interface DataStore {
   users: user[]
   quizzes: quiz[]
   tokens: token[]
   trash: quiz[]
-  questions: question[]
 }
 
 let data: DataStore = {
@@ -50,7 +50,6 @@ let data: DataStore = {
   quizzes: [],
   tokens: [],
   trash: [],
-  questions: []
 };
 
 // Use get() to access the data
