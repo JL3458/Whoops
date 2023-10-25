@@ -1,4 +1,4 @@
-import { getData, setData, question} from './dataStore';
+import { getData, setData, question } from './dataStore';
 
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 

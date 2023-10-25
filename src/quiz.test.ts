@@ -23,12 +23,12 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}`, { json: { token: token } });
   return JSON.parse(request1.body as string);
 }
-/*
+
 export function adminQuizNameUpdateRequest(token: string, quizid: number, newName: string) {
-  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/name`, { qs: { token: token, newName: newName }, });
+  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/name`, { qs: { token: token, newName: newName } });
   return JSON.parse(request1.body as string);
 }
-*/
+
 export function adminQuizInfoRequest(token: string, quizid: number) {
   const res = request('GET', SERVER_URL + `/v1/admin/quiz/${quizid}`, { qs: { token } });
   return JSON.parse(res.body.toString());
