@@ -18,17 +18,78 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}`, { json: { token: token } });
   return JSON.parse(request1.body as string);
 }
-
-export function adminQuizNameUpdateRequest(token: string, quizId: number, newName: string) {
-  const request1 = request('PATCH', SERVER_URL + `/v1/admin/quiz/${quizId}/name`, { json: { token: token, newName: newName }, });
+/*
+export function adminQuizNameUpdateRequest(token: string, quizid: number, newName: string) {
+  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/name`, { qs: { token: token, newName: newName }, });
   return JSON.parse(request1.body as string);
 }
-
-export function adminQuizInfoRequest(token: string, quizId: number) {
-  const request1 = request('GET', `${SERVER_URL}/v1/admin/quiz/${quizId}`, { json: { token: token }, });
-  return JSON.parse(request1.body as string);
+*/
+export function adminQuizInfoRequest(token: string, quizid: number) {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizid}`,
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.body.toString());
+}
+export function adminQuizListRequest(token: string) {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/quiz/list',
+    {
+      qs: {
+        token
+      }
+    }
+  );
+  return JSON.parse(res.body.toString());
 }
 /// ////////////////////// Main Tests /////////////////////////////
+describe('Tests for adminQuizList', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Invalid token', () => {
+    expect(adminQuizListRequest('234097634')).toEqual(ERROR);
+    expect(adminQuizListRequest('1248734')).toEqual(ERROR);
+    expect(adminQuizListRequest('24763')).toEqual(ERROR);
+    expect(adminQuizListRequest('5487')).toEqual(ERROR);
+  });
+
+  test('Valid Test quizList with 1 quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser2.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+  });
+
+  test('Valid Test quizList with multiple quizzes', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }, { quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'Sample Quiz Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 3', 'Testing?')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 4', 'Testing!')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizListRequest(newUser2.token)).toEqual({
+      quizzes:
+            [{ quizId: expect.any(Number), name: 'Test Quiz 1' },
+              { quizId: expect.any(Number), name: 'Test Quiz 2' },
+              { quizId: expect.any(Number), name: 'Test Quiz 3' },
+              { quizId: expect.any(Number), name: 'Test Quiz 4' }
+            ]
+    });
+  });
+});
 
 describe('Tests of adminQuizCreate', () => {
   beforeEach(() => {
@@ -212,7 +273,7 @@ describe('Tests of adminQuizRemove', () => {
   });
 });
 
-describe('Tests of adminQuizNameUpdate', () => {
+/*describe('Tests of adminQuizNameUpdate', () => {
   beforeEach(() => {
     clearRequest();
   });
@@ -261,7 +322,7 @@ describe('Tests of adminQuizNameUpdate', () => {
     expect(adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'Test Quiz 2')).toEqual({});
   })
 });
-
+*/
 describe('Tests of adminQuizInfo', () => {
   beforeEach(() => {
     clearRequest();

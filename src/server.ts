@@ -9,13 +9,9 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-<<<<<<< HEAD
-import { adminAuthLogin, adminAuthRegister } from './auth';
-import { adminQuizCreate, adminQuizRemove, adminQuizNameUpdate, adminQuizInfo } from './quiz';
-=======
+
+import { adminQuizCreate, adminQuizNameUpdate, adminQuizInfo, adminQuizRemove, adminQuizList } from './quiz';
 import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
-import { adminQuizCreate, adminQuizRemove } from './quiz';
->>>>>>> master
 
 // Set up web app
 const app = express();
@@ -95,6 +91,20 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 /// ///////////////////////// quiz.ts ///////////////////////////////
 
+// adminQuizList Request
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizList(token);
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
 // adminQuizCreate Request
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
@@ -128,7 +138,7 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 // adminQuizInfo Request
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token } = req.body;
+  const token = req.query.token as string
   const response = adminQuizInfo(token, quizId);
 
   if ('Token is empty or invalid' in response) {
@@ -138,14 +148,15 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  
   res.json(response);
 });
 
 // adminQuizNmaeUpdate Request
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
-  const quizId = parseInt(req.params.quizid);
+  const quizid = parseInt(req.params.quizid);
   const { token, name } = req.body;
-  const response = adminQuizNameUpdate(token, quizId, name);
+  const response = adminQuizNameUpdate(token, quizid, name);
 
   if ('Token is empty or invalid' in response) {
     return res.status(401).json(response);
