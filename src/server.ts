@@ -24,7 +24,9 @@ import {
   adminQuizRestore,
   adminQuizTransfer,
   adminQuizTrashEmpty,
-  adminQuizViewTrash
+  adminQuizViewTrash,
+  adminQuizInfo,
+  adminQuizNameUpdate
 } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
@@ -224,6 +226,14 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizNameUpdate Request
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizid = parseInt(req.params.quizid);
+  const { token, name } = req.body;
+  const response = adminQuizNameUpdate(token, quizid, name);
+  res.json(response);
+});
+
 // adminQuizViewTrash Request
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   // data is passed into a query string
@@ -257,6 +267,7 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizTrashEmpty Request
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   // passes the token as a query string
   const token = req.query.token as string;
@@ -294,6 +305,22 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizInfo Request
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.query.token as string;
+  const response = adminQuizInfo(token, quizId);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+
+  res.json(response);
+});
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

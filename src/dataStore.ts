@@ -29,7 +29,7 @@ export interface quiz {
   description: string,
   timeCreated: number,
   timeLastEdited: number,
-  userId: number
+  userId: number,
   questions: question[]
 }
 
