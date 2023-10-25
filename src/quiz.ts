@@ -1,4 +1,4 @@
-import { getData, setData, question} from './dataStore';
+import { getData, setData, question } from './dataStore';
 
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
@@ -95,7 +95,7 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   };
 }
 
-export function adminQuizCreate(token: string, name: string, description: string): QuizCreateReturn | ErrorReturn {
+export function adminQuizCreate(token: string, name: string, description: string) : QuizCreateReturn | ErrorReturn {
   const data = getData();
 
   // Calling helper function which tests for valid token
@@ -221,21 +221,21 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
 export function adminQuizNameUpdate(token: string, quizId: number, name: string): ErrorReturn | object {
   const data = getData();
 
-  if (token === '') {
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
 
-  // Converts token string to token object
+  // Converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
-  // Checks if Token is empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
   }
-  // Checks whether quizId does not refer to a quiz that this user owns
-  const quiz = data.quizzes.find((quiz) => quiz.name === name);
-  if (quiz !== undefined && quiz.userId === tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+
+  // Checks if the quiz belongs to the current logged-in user
+  if (tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but the user is not the owner of this quiz' };
   }
 
   // Checks if name contains invalid characters. Valid characters are alphanumeric and spaces
@@ -249,15 +249,21 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
     return { error: 'Name should be between 3 and 30 characters' };
   }
 
-  // Checks if name is already used by the current logged in user for another quiz
+  // Checks if the new name is the same as the old name (no need to proceed)
+  if (tempQuiz.name === name) {
+    return {};
+  }
+
+  // Checks if name is already used by the current logged-in user for another quiz
   const otherQuizWithSameName = data.quizzes.find((q) => q.userId === tempToken.userId && q.quizId !== quizId && q.name === name);
+
   if (otherQuizWithSameName) {
     return { error: 'Name is already used by another quiz made by the user' };
   }
 
-  // Updates the quiz name
-  quiz.name = name;
-  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+  // Update the quiz name
+  tempQuiz.name = name;
+  tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
   return {};
 }
