@@ -25,7 +25,7 @@ const PATTERN = /^[a-zA-Z\s\-']+$/;
 const LETTERS = /[a-zA-Z]/;
 const NUMS = /\d/;
 
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): AuthReturn | ErrorReturn {
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
   const data = getData();
 
   // Checking if email is valid
@@ -53,7 +53,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   }
 
   const Id = data.users.length + 1;
-  data.users.push({ userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0 });
+  data.users.push({ userId: Id, email: email, password: password, nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0, oldPasswords: [password] });
   const newToken = startSession(Id);
   const encodeToken = encodeURIComponent(JSON.stringify(newToken));
   setData(data);
@@ -93,19 +93,14 @@ export function adminAuthLogin(email: string, password: string): AuthReturn | Er
 export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn {
   const data = getData();
 
-  // Checking if a token exists
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
+
   // convert token to an object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
-  // Checks if there is a valid token
-  if (!tempToken ||
-    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
-    undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
   // assigns the current token to a usertoken variable
   const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
 
@@ -124,6 +119,128 @@ export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn
       numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
     }
   };
+}
+
+export function adminAuthLogout(token: string): ErrorReturn | object {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Reintialises the tokens array without the token to be logged out
+  data.tokens = data.tokens.filter(currentToken => !isEqual(currentToken, tempToken));
+
+  return {};
+}
+
+export function adminUpdateUserDetails(token: string, email: string, nameFirst: string, nameLast: string): ErrorReturn | object {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // finds the user that is corresponding to the token and updates its details
+  const userToUpdate = data.users.find((user) => user.userId === tempToken.userId);
+
+  // Checking if email is valid
+  if (validator.isEmail(email) === false) {
+    return { error: 'Invalid Entry' };
+  }
+  // Checking if email is in use by another user that is not the current authorised user
+  for (const user of data.users) {
+    if (user.email === email && userToUpdate.email !== email) {
+      return { error: 'Email Already in Use' };
+    }
+  }
+  // Checking if first and last name meet the required conditions
+  if (nameFirst.length < 2 || nameFirst.length > 20 || PATTERN.test(nameFirst) === false) {
+    return { error: 'Invalid First Name' };
+  }
+  if (nameLast.length < 2 || nameLast.length > 20 || PATTERN.test(nameLast) === false) {
+    return { error: 'Invalid Last Name' };
+  }
+
+  Object.assign(userToUpdate, { email: email, nameFirst: nameFirst, nameLast: nameLast });
+  setData(data);
+
+  return {};
+}
+
+export function adminUserPassword(token: string, oldPassword: string, newPassword: string): ErrorReturn | object {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // finds the user that is corresponding to the token and updates its details
+  const userToUpdate = data.users.find((user) => user.userId === tempToken.userId);
+
+  // Check if Old Password is not the correct old password
+  if (userToUpdate.password !== oldPassword) {
+    return { error: 'Old Password is not the correct old password' };
+  }
+
+  // Check if Old Password and New Password match exactly
+  if (oldPassword === newPassword) {
+    return { error: 'Old Password and New Password match exactly' };
+  }
+
+  // Check if New Password has already been used before by this user
+  if (userToUpdate.oldPasswords.find(currentOldPassword => currentOldPassword === newPassword) !== undefined) {
+    return { error: 'New Password has already been used before by this user' };
+  }
+
+  // Checking if new password meets the required conditions
+  if (newPassword.length < 8 || LETTERS.test(newPassword) === false || NUMS.test(newPassword) === false) {
+    return { error: 'Invalid  New Password' };
+  }
+
+  userToUpdate.password = newPassword;
+  userToUpdate.oldPasswords.push(newPassword);
+
+  return {};
+}
+
+/// /////////////////////////// Helper Functions ////////////////////////////////
+
+function isEqual(currentToken: token, tempToken: token): boolean {
+  return JSON.stringify(currentToken) === JSON.stringify(tempToken);
+}
+
+function checkValidToken(token: string): boolean {
+  const data = getData();
+
+  // Checking if a token exists
+  if (token === '') {
+    return true;
+  }
+
+  // convert token to an object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if there is a valid token
+  if (!tempToken ||
+    data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
+    undefined) {
+    return true;
+  }
+
+  return false;
 }
 
 function startSession(authUserId: number): token {

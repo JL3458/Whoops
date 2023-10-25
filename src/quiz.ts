@@ -1,5 +1,7 @@
 import { getData, setData } from './dataStore';
 
+/// //////////////////////// Functions Return Interface ///////////////////////////////////
+
 interface ErrorReturn {
     error: string;
 }
@@ -25,7 +27,15 @@ interface QuizInfoReturn {
     description: string,
 }
 
-// Helper Functions
+interface QuizViewTrashReturn {
+    quizzes: [
+      {
+      quizId: number,
+      name: string
+    }
+  ]
+}
+/// //////////////////////// Helper Functions ///////////////////////////////////
 
 function CheckValidUserId(authUserId: number): boolean {
   const data = getData();
@@ -35,13 +45,14 @@ function CheckValidUserId(authUserId: number): boolean {
   return false;
 }
 
-export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
+function checkValidToken(token: string): boolean {
   const data = getData();
 
   // Checking if a token exists
   if (token === '') {
-    return { error: 'Token is empty or invalid' };
+    return true;
   }
+
   // convert token to an object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
@@ -49,16 +60,32 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   if (!tempToken ||
     data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) ===
     undefined) {
+    return true;
+  }
+
+  return false;
+}
+
+/// //////////////////////// Main Functions ///////////////////////////////////
+
+export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
+  const data = getData();
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
+  }
+
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
+  if (CheckValidUserId(userToken.userId)) {
+    return { error: 'AuthUserId is not a valid user' };
   }
   // Retrieves the names of the quizzes and respective quizIds
   const quizDetails = data.quizzes.filter((quiz) => quiz.userId === tempToken.userId);
 
   // returns the quiz information in the format
-  /* quizzes: {
-        quizId:
-        name:
-    } */
   const quizArray = quizDetails.map((quiz) => ({
     quizId: quiz.quizId,
     name: quiz.name
@@ -71,17 +98,12 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
 export function adminQuizCreate(token: string, name: string, description: string): QuizCreateReturn | ErrorReturn {
   const data = getData();
 
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   // Checks if entered quiz name is invalid
   const validCharacter = /^[a-zA-Z0-9\s]*$/;
@@ -126,18 +148,12 @@ export function adminQuizCreate(token: string, name: string, description: string
 
 export function adminQuizRemove(token: string, quizId: number) {
   const data = getData();
-
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
@@ -201,7 +217,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
   };
 }
 
-export function adminQuizNameUpdate(token: string, quizId: number, name: string): ErrorReturn | {} {
+export function adminQuizNameUpdate(token: string, quizId: number, name: string): ErrorReturn | object {
   const data = getData();
 
   if (token === '') {
@@ -242,7 +258,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   quiz.name = name;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
-  return {}
+  return {};
 }
 
 export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, description: string): ErrorReturn | null {
@@ -275,3 +291,151 @@ export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, d
     quizToUpdate.timeLastEdited = Math.floor(Date.now() / 1000);
   }
 }
+
+export function adminQuizTransfer(token: string, quizId: number, userEmail: string) {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if quizId refers to an invalid quiz
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+  }
+
+  // Check if userEmail is valid
+  const tempTargertUser = data.users.find((user) => user.email === userEmail);
+  if (tempTargertUser === undefined) {
+    return { error: 'userEmail is not a real user' };
+  }
+
+  // Check if userEmail is the current logged in user
+  if (tempTargertUser !== undefined && tempTargertUser.userId === tempToken.userId) {
+    return { error: 'userEmail is the current logged in user' };
+  }
+
+  // Check if Quiz ID refers to a quiz that has a name that is already used by the target user
+  const targetUserQuizzes = data.quizzes.filter((quiz) => quiz.userId === tempTargertUser.userId);
+  if (targetUserQuizzes.find((quiz) => quiz.name === tempQuiz.name) !== undefined) {
+    return { error: 'The target user already has a quiz with the same name' };
+  }
+
+  tempQuiz.userId = tempTargertUser.userId;
+  setData(data);
+
+  return {};
+}
+
+export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorReturn {
+  const data = getData();
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
+  // if (CheckValidUserId(userToken.userId)) {
+  //   return { error: 'AuthUserId is not a valid user' };
+  // }
+  // Retrieves the names of the quizzes and respective quizIds from the trash
+  const quizDetails = data.trash.filter((quiz) => quiz.userId === userToken.userId);
+
+  // returns the quiz information in the correct format
+  const quizArray = quizDetails.map((quiz) => ({
+    quizId: quiz.quizId,
+    name: quiz.name
+  })) as QuizViewTrashReturn['quizzes'];
+  return {
+    quizzes: quizArray
+  };
+}
+
+export function adminQuizRestore(token: string, quizId: number) {
+  const data = getData();
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if quizId refers to an invalid quiz
+  const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);
+
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+  }
+
+  // Checks if Quiz ID refers to a quiz that has a name that is already used by the target user
+  const targetTrashQuizzes = data.quizzes.filter((quiz) => quiz.userId === tempToken.userId);
+  if (targetTrashQuizzes.find((quiz) => quiz.name === tempQuiz.name) !== undefined) {
+    return { error: 'The target user already has a quiz with the same name' };
+  }
+
+  // find the position of the targetted quiz in the trash array.
+  const tempQuizIndex = data.trash.findIndex((quiz) => quiz.quizId === quizId);
+
+  // removes the targetted quiz from the trash array.
+  data.trash.splice(tempQuizIndex, 1);
+
+  // updates the timeLastEdited of the target quiz.
+  tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  // adds the targetted quiz onto the end of the quiz array.
+  data.quizzes.push(tempQuiz);
+
+  setData(data);
+  return {};
+}
+
+export function adminQuizTrashEmpty (token: string, quizIds: string) {
+  const data = getData();
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // converts the quizIds string into an array
+  const quizIdArray: number[] = quizIds.split(',').map(Number);
+
+  for (const quizId of quizIdArray) {
+    const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);
+
+    // Checks if quizId refers to an invalid quiz
+    if (tempQuiz === undefined) {
+      return { error: 'One or more of the quizIds is not of a valid quiz' };
+    }
+
+    // Checks if the quiz belongs to the current logged in user
+    if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+      return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    }
+
+    // Removes the quiz from quizzes list
+    const quizIndex = data.trash.findIndex((quiz) => quiz.quizId === quizId);
+    data.trash.splice(quizIndex, 1);
+
+    setData(data);
+  }
+  return {};
+}
+/// //////////////////////////////  Epilogue ///////////////////////////////////

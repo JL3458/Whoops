@@ -9,9 +9,26 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import { clear } from './other';
-
-import { adminQuizCreate, adminQuizNameUpdate, adminQuizInfo, adminQuizRemove, adminQuizList } from './quiz';
-import { adminAuthLogin, adminAuthRegister, adminUserDetails } from './auth';
+import {
+  adminAuthLogin,
+  adminAuthLogout,
+  adminAuthRegister,
+  adminUpdateUserDetails,
+  adminUserDetails,
+  adminUserPassword
+} from './auth';
+import {
+  adminQuizCreate,
+  adminQuizList,
+  adminQuizRemove,
+  adminQuizRestore,
+  adminQuizTransfer,
+  adminQuizTrashEmpty,
+  adminQuizViewTrash,
+  adminQuizInfo,
+  adminQuizNameUpdate
+} from './quiz';
+import { adminQuizCreateQuestion } from './question';
 
 // Set up web app
 const app = express();
@@ -45,38 +62,95 @@ app.get('/echo', (req: Request, res: Response) => {
 
 /// ///////////////////////// auth.ts ///////////////////////////////
 
-// authAdminRegister Request
+// adminAuthRegister Request
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  // email, password, nameFirst, nameLast values obtained from body
   const { email, password, nameFirst, nameLast } = req.body;
 
-  const ret = adminAuthRegister(email, password, nameFirst, nameLast);
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
 
-  if ('error' in ret) {
-    return res.status(400).json(ret);
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
   }
-  res.json(ret);
+  res.json(response);
 });
 
-// authAdminLogin Request
+// adminAuthLogin Request
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  // email and password values obtained from body
   const { email, password } = req.body;
 
-  const ret = adminAuthLogin(email, password);
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogin(email, password);
 
-  if ('error' in ret) {
-    return res.status(400).json(ret);
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
   }
-  res.json(ret);
+  res.json(response);
 });
 
-// authAdminUserDetails Request
+// adminUserDetails Request
 app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   // data is passed into a query string
   const token = req.query.token as string;
+
   // logic of the function is retrieved from auth.ts
   const response = adminUserDetails(token);
+
   // handles an error
   if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminAuthLogout Request
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  // token value obtained from body
+  const { token } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogout(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  res.json(response);
+});
+
+// adminUpdateUserDetails Request
+app.put('/v1/admin/user/details', (req: Request, res: Response) => {
+  // token, email, nameFirst, nameLast values obtained from body
+  const { token, email, nameFirst, nameLast } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUpdateUserDetails(token, email, nameFirst, nameLast);
+
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminUserPassword Request
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  // token, oldPassword, newPassword values obtained from body
+  const { token, oldPassword, newPassword } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUserPassword(token, oldPassword, newPassword);
+
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
     return res.status(400).json(response);
   }
   res.json(response);
@@ -105,6 +179,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
   res.json(response);
 });
+
 // adminQuizCreate Request
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
@@ -135,10 +210,105 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizTransfer Request
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, userEmail } = req.body;
+  const response = adminQuizTransfer(token, quizId, userEmail);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizNameUpdate Request
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizid = parseInt(req.params.quizid);
+  const { token, name } = req.body;
+  const response = adminQuizNameUpdate(token, quizid, name);
+  res.json(response);
+});
+
+// adminQuizViewTrash Request
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizViewTrash(token);
+
+  // handles an error
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizRestore Request
+app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token } = req.body;
+  const response = adminQuizRestore(token, quizId);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
+// adminQuizTrashEmpty Request
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  // passes the token as a query string
+  const token = req.query.token as string;
+  // passes the quizIds as a query string
+  const quizIds = req.query.quizIds as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizTrashEmpty(token, quizIds);
+
+  if ('One or more of the quizIds is not of a valid quiz' in response) {
+    return res.status(400).json(response);
+  } else if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  }
+  res.json(response);
+});
+
+/// ////////////////////////// question.ts ///////////////////////////////
+
+// adminQuizCreateQuestion Request
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, question } = req.body;
+
+  const response = adminQuizCreateQuestion(token, quizId, question);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
+
 // adminQuizInfo Request
 app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const token = req.query.token as string
+  const token = req.query.token as string;
   const response = adminQuizInfo(token, quizId);
 
   if ('Token is empty or invalid' in response) {
@@ -148,26 +318,9 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
-  
+
   res.json(response);
 });
-
-// adminQuizNmaeUpdate Request
-app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
-  const quizid = parseInt(req.params.quizid);
-  const { token, name } = req.body;
-  const response = adminQuizNameUpdate(token, quizid, name);
-
-  if ('Token is empty or invalid' in response) {
-    return res.status(401).json(response);
-  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
-    return res.status(403).json(response);
-  } else if ('error' in response) {
-    return res.status(400).json(response);
-  }
-  res.json(response);
-});
-
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

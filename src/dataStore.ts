@@ -5,7 +5,8 @@ export interface user {
   nameFirst: string,
   nameLast: string,
   numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number
+  numFailedPasswordsSinceLastLogin: number,
+  oldPasswords: string[]
 }
 
 export interface quiz {
@@ -22,18 +23,34 @@ export interface token {
   sessionId: string
 }
 
+export interface answer {
+  answerTitle: string,
+  correct: boolean
+}
+
+export interface question {
+  quizId: number,
+  questionId: number,
+  questionTitle: string,
+  duration: number,
+  points: number,
+  answers: answer[]
+}
+
 interface DataStore {
   users: user[]
   quizzes: quiz[]
   tokens: token[]
   trash: quiz[]
+  questions: question[]
 }
 
 let data: DataStore = {
   users: [],
   quizzes: [],
   tokens: [],
-  trash: []
+  trash: [],
+  questions: []
 };
 
 // Use get() to access the data
