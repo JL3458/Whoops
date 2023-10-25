@@ -257,12 +257,15 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   res.json(response);
 });
 
-app.delete('v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-  const { token, quizId} = req.body;
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  // passes the token as a query string
+  const token = req.query.token as string;
+  // passes the quizIds as a query string
+  const quizIds = req.query.quizIds as string;
   // logic of the function is retrieved from auth.ts
-  const response = adminQuizTrashEmpty(token, quizId);
+  const response = adminQuizTrashEmpty(token, quizIds);
 
-  if ('quizId is not of a valid quiz' in response) {
+  if ('One or more of the quizIds is not of a valid quiz' in response) {
     return res.status(400).json(response);
   } else if ('Token is empty or invalid' in response) {
     return res.status(401).json(response);
@@ -270,7 +273,7 @@ app.delete('v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
     return res.status(403).json(response);
   }
   res.json(response);
-})
+});
 
 /// ////////////////////////// question.ts ///////////////////////////////
 
