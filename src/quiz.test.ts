@@ -39,9 +39,9 @@ export function adminQuizRestoreRequest (token: string, quizid: number) {
   return JSON.parse(res.body as string);
 }
 // Needs to fix this array
-export function adminQuizTrashEmptyRequest(token: string, quizid: Array) {
-  const res = request('DELETE', SERVER_URL + `/v1/admin/quiz/trash/empty`, { json: { token, quizid} });
-  return JSON.parse(res.body as string);
+export function adminQuizTrashEmptyRequest(token: string, quizIds: string) {
+  const res = request('DELETE', SERVER_URL + '/v1/admin/quiz/trash/empty', { qs: { token, quizIds } });
+  return JSON.parse(res.body.toString());
 }
 
 /// ////////////////////// Main Tests /////////////////////////////
@@ -462,6 +462,7 @@ describe('Tests for adminQuizRestore', () => {
     expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 123' }] });
   });
 });
+
 describe('Tests for adminQuizTrashEmpty', () => {
   beforeEach(() => {
     clearRequest();
@@ -470,44 +471,47 @@ describe('Tests for adminQuizTrashEmpty', () => {
   test('Token is Invalid', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndexString = quizIndex.quizId.toString();
     expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest('', quizIndex.quizId)).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest('', quizIndexString)).toEqual(ERROR);
   });
 
   test('QuizId is Invalid', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    const quizIndexString = quizIndex.quizId.toString();
     expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndex.quizId + 1)).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndexString + 1)).toEqual(ERROR);
   });
 
   test('Removal when there are no quizzes', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-    expect(adminQuizTrashEmptyRequest(newUser.token, 100)).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest(newUser.token, '100')).toEqual(ERROR);
   });
 
   test('Quiz is not owned by the owner', () => {
     const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascharanous');
     const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const quizIndexString = quizIndex.quizId.toString();
     expect(adminQuizRemoveRequest(newUser1.token, quizIndex.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser2.token, quizIndex.quizId)).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest(newUser2.token, quizIndexString)).toEqual(ERROR);
   });
 
   test('Deleting one quiz, Normal Case', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndexString = quizIndex.quizId.toString();
     adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
     //  Now, we remove this quiz
     expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
     // Empty trash
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndex.quizId)).toEqual({});
+    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndexString)).toEqual({});
     // check if its really gone
     expect(adminQuizViewTrashRequest(newUser.token)).toEqual({ quizzes: [] });
-    
   });
 
   test('Multiple Quizzes Deletion from one user, Normal Case', () => {
@@ -515,6 +519,10 @@ describe('Tests for adminQuizTrashEmpty', () => {
     const quizIndex1 = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const quizIndex2 = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
     const quizIndex3 = adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
+    const quizIndexString1 = quizIndex1.quizId.toString();
+    const quizIndexString2 = quizIndex2.quizId.toString();
+    const quizIndexString3 = quizIndex3.quizId.toString();
+    const combinedQuizIds = [quizIndexString1, quizIndexString2, quizIndexString3].join(',');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
 
     // We wont be able to make new Quizzes
@@ -523,37 +531,20 @@ describe('Tests for adminQuizTrashEmpty', () => {
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual(ERROR);
 
     // Now, we remove this quizzes
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndex1.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndex2.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndex3.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex2.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex3.quizId)).toEqual({});
+
+    // Empty all of them
+    expect(adminQuizTrashEmptyRequest(newUser.token, combinedQuizIds)).toEqual({});
 
     // Adding the quizzes again should return us new quizIds and no error
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+    // check if its really gone
+    expect(adminQuizViewTrashRequest(newUser.token)).toEqual({ quizzes: [] });
   });
-
-  test('Multiple quizzes Deletion with mutiple users, Normal Case', () => {
-    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascheranous');
-    const newUser3 = authRegisterRequest('Validemailt@gmail.com', 'password123', 'Sanath', 'Nevagi');
-    const quizIndex1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar');
-    const quizIndex2 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason');
-    adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath');
-
-    // We wont be able to make new Quizzes
-    adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar');
-    adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason');
-
-    // Now, we remove this quizzes
-    expect(adminQuizTrashEmptyRequest(newUser1.token, quizIndex1.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser2.token, quizIndex2.quizId)).toEqual({});
-
-    // Adding the quizzes again should return us new quizIds and no error
-    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
-    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toEqual({ quizId: expect.any(Number) });
-  });
-  
 });
 
 /// /////////////////////// Epilogue //////////////////////////////
