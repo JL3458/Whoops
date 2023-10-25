@@ -1,6 +1,4 @@
 import { getData, setData, answer } from './dataStore';
-import { adminAuthRegister } from './auth';
-import { adminQuizCreate } from './quiz';
 
 /// ///////////////// Function Return Interfaces ///////////////////
 

@@ -9,6 +9,11 @@ export interface user {
   oldPasswords: string[]
 }
 
+export interface answer {
+  answerTitle: string,
+  correct: boolean
+}
+
 export interface question {
   quizId: number,
   questionId: number,
@@ -31,11 +36,6 @@ export interface quiz {
 export interface token {
   userId: number,
   sessionId: string
-}
-
-export interface answer {
-  answerTitle: string,
-  correct: boolean
 }
 
 interface DataStore {
