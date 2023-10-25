@@ -396,4 +396,47 @@ export function adminQuizRestore(token: string, quizId: number) {
 
   return {};
 }
+
+// Needs to fix this array
+export function adminQuizTrashEmpty (token: string, quizIds: string) {
+  const data = getData();
+  console.log('THIS IS QUIZTRASH');
+  console.log('THIS IS QUIZTRASH');
+  console.log('THIS IS QUIZTRASH');
+  console.log('THIS IS QUIZTRASH');
+  console.log('THIS IS QUIZTRASH');
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // converts the quizIds string into an array
+  const quizIdArray: number[] = quizIds.split(',').map(Number);
+  console.log('quizid string', quizIds);
+  console.log('temptokenuserid', tempToken.userId);
+  console.log('quizid array', quizIdArray);
+
+  for (const quizId of quizIdArray) {
+    const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);
+
+    // Checks if quizId refers to an invalid quiz
+    if (tempQuiz === undefined) {
+      return { error: 'One or more of the quizIds is not of a valid quiz' };
+    }
+
+    // Checks if the quiz belongs to the current logged in user
+    if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+      return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    }
+
+    // Removes the quiz from quizzes list
+    const quizIndex = data.trash.findIndex((quiz) => quiz.quizId === quizId);
+    data.trash.splice(quizIndex, 1);
+
+    setData(data);
+  }
+  return {};
+}
 /// //////////////////////////////  Epilogue ///////////////////////////////////
