@@ -139,7 +139,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     description: description,
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    userId: tempToken.userId
+    userId: tempToken.userId,
+    questions: []
   };
 
   data.quizzes.push(tempQuizStorage);
