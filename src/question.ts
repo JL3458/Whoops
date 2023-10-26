@@ -1,6 +1,4 @@
-import { adminAuthRegister } from './auth';
 import { getData, setData, answer } from './dataStore';
-import { adminQuizCreate, adminQuizInfo } from './quiz';
 
 /// ///////////////// Function Return Interfaces ///////////////////
 
@@ -23,7 +21,7 @@ interface QuestionCreateReturn {
 
 /// //////////////////// Main Functions ///////////////////////////
 
-export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody){
+export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody) {
   const data = getData();
 
   // If Token is an empty string
@@ -242,7 +240,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   }
 
   // Delete the question
-  tempQuiz.questions.splice(existingQuestion, 1); 
+  tempQuiz.questions.splice(existingQuestion, 1);
 
   setData(data);
   return {};

@@ -717,11 +717,11 @@ describe('Tests of adminQuizQuestionDelete', () => {
       ]
     };
     // Check if question is in questions array
-    expect(quizInfo.questions).toEqual([quizInfoOutput]); 
+    expect(quizInfo.questions).toEqual([quizInfoOutput]);
     expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId)).toEqual({});
     quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
-    //Should be an emoty array after deleting question
-    expect(quizInfo.questions).toEqual([]); 
+    // Should be an emoty array after deleting question
+    expect(quizInfo.questions).toEqual([]);
   });
 
   test('Delete Question from multiple Successfully', () => {
@@ -856,11 +856,11 @@ describe('Tests of adminQuizQuestionDelete', () => {
       ]
     };
     // Confirm if questions are in questions array
-    expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]); 
+    expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]);
     // Delete the question
     expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId2)).toEqual({});
     quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
-    //Should be an array with 2 questions after deleting question as shown below
+    // Should be an array with 2 questions after deleting question as shown below
     const quizInfoOutput = [{
       questionId: questionId1,
       question: 'Sample Question 1',
@@ -901,7 +901,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
         },
       ]
     }];
-    expect(quizInfo.questions).toEqual(quizInfoOutput); 
+    expect(quizInfo.questions).toEqual(quizInfoOutput);
   });
 
   test('Attempt to delete Non-Existent Question', () => {
