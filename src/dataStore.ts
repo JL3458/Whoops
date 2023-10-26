@@ -15,7 +15,6 @@ export interface answer {
 }
 
 export interface question {
-  quizId: number,
   questionId: number,
   questionTitle: string,
   duration: number,

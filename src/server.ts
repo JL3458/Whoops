@@ -26,7 +26,8 @@ import {
   adminQuizTrashEmpty,
   adminQuizViewTrash,
   adminQuizInfo,
-  adminQuizNameUpdate
+  adminQuizNameUpdate,
+  adminQuizDescriptionUpdate
 } from './quiz';
 import { adminQuizCreateQuestion } from './question';
 
@@ -240,6 +241,23 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
     return res.status(400).json(response);
   }
   res.json(response);
+});
+
+// adminQuizDescriptionUpdate
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const { token, description } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const resp = adminQuizDescriptionUpdate(token, quizId, description);
+  if (('QuizId does not refer to a valid quiz') in resp) {
+    return res.status(400).json(resp);
+  } else if ('Description names are invalid' in resp) {
+    return res.status(400).json(resp);
+  } else if ('Token is empty or invalid' in resp) {
+    return res.status(401).json(resp);
+  } else if ('Quiz is not owned by the owner' in resp) {
+    return res.status(403).json(resp);
+  }
+  res.json(resp);
 });
 
 // adminQuizViewTrash Request

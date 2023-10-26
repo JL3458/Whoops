@@ -14,6 +14,11 @@ export function adminQuizListRequest(token: string) {
   return JSON.parse(res.body.toString());
 }
 
+export function adminQuizDescriptionUpdateRequest(token: string, quizid: number, description: string) {
+  const res = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/description`, { json: { token, description } });
+  return JSON.parse(res.body as string);
+}
+
 export function adminQuizCreateRequest(token: string, name: string, description: string) {
   const request1 = request('POST', SERVER_URL + '/v1/admin/quiz', { json: { token: token, name: name, description: description } });
   return JSON.parse(request1.body as string);
@@ -52,6 +57,7 @@ export function adminQuizTrashEmptyRequest(token: string, quizIds: string) {
   const res = request('DELETE', SERVER_URL + '/v1/admin/quiz/trash/empty', { qs: { token, quizIds } });
   return JSON.parse(res.body.toString());
 }
+
 /// ////////////////////// Main Tests /////////////////////////////
 
 describe('Tests for adminQuizList', () => {
@@ -329,56 +335,60 @@ describe('Tests of adminQuizNameUpdate', () => {
 });
 
 describe('Tests of adminQuizTransfer', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest('', quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
-});
+  beforeEach(() => {
+    clearRequest();
+  });
+  test('Tests for empty or invalid token', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest('', quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
+  });
+  test('Tests for Invalid Quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId + 1, 'Validemail2@gmail.com')).toEqual(ERROR);
+  });
 
-test('Tests for Invalid Quiz', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId + 1, 'Validemail2@gmail.com')).toEqual(ERROR);
-});
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser2.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
+  });
 
-test('Valid token is provided, but user is not an owner of this quiz', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser2.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
-});
+  test('Test for Normal Cases', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual({});
 
-test('Test for Normal Cases', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual({});
+    // Doesn't add a new quiz as the quiz already exists for the userId
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test')).toEqual(ERROR);
+  });
 
-  // Doesn't add a new quiz as the quiz already exists for the userId
-  expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test')).toEqual(ERROR);
-});
+  test('Test for Invalid Email', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail5@gmail.com')).toEqual(ERROR);
+  });
 
-test('Test for Invalid Email', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail5@gmail.com')).toEqual(ERROR);
-});
+  test('Test for Current User Email is Same as Current User ', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail@gmail.com')).toEqual(ERROR);
+  });
 
-test('Test for Current User Email is Same as Current User ', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail@gmail.com')).toEqual(ERROR);
-});
-
-test('Test for when Quiz ID refers to a quiz that has a name that is already used by the target user', () => {
-  const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-  const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
-  const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-  adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test');
-  expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
+  test('Test for when Quiz ID refers to a quiz that has a name that is already used by the target user', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toEqual(ERROR);
+  });
 });
 
 describe('Tests of adminQuizInfo', () => {
@@ -634,6 +644,65 @@ describe('Tests for adminQuizTrashEmpty', () => {
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual({ quizId: expect.any(Number) });
     // check if its really gone
     expect(adminQuizViewTrashRequest(newUser.token)).toEqual({ quizzes: [] });
+  });
+});
+
+describe('Tests of adminQuizDescriptionUpdate', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizDescriptionUpdateRequest('', quiz1.quizId, 'Valid description')).toEqual(ERROR);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const User2 = authRegisterRequest('validddemail@gmail.com', 'validpassword12', 'Yuki', 'Tsunoda');
+    expect(adminQuizDescriptionUpdateRequest(User2.token, quiz1.quizId, 'Valid description')).toEqual(ERROR);
+  });
+
+  test('QuizId does not refer to a valid quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 2', 'This is a test');
+    expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId + 1, 'Valid description')).toEqual(ERROR);
+  });
+
+  test('Description names are invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    expect(adminQuizCreateRequest(newUser.token, 'Valid quiz name 1', 'ThisStringNOTIsExactly100CharactersLongThisStringNOTIsExactly100CharactersLong Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor')).toEqual(ERROR);
+  });
+
+  test('Checking if description update is working', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'This is a test'
+    });
+    expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid description')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'Valid description'
+    });
+    expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid testing for description')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'Valid testing for description'
+    });
   });
 });
 
