@@ -2,7 +2,7 @@ import request from 'sync-request-curl';
 import { port, url } from './config.json';
 import { clearRequest } from './other.test';
 import { authRegisterRequest } from './auth.test';
-import { adminQuizCreateRequest } from './quiz.test';
+import { adminQuizCreateRequest, adminQuizInfoRequest } from './quiz.test';
 import { questionBody } from './question';
 
 const SERVER_URL = `${url}:${port}`;
@@ -21,6 +21,10 @@ export function adminQuizUpdateQuestionRequest(token: string, quizid: number, qu
   });
   return JSON.parse(request1.body as string);
 }
+export function adminQuizQuestionDeleteRequest(token: string, quizid: number, questionId: number) {
+  const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}/question/${questionId}`, { qs: { token: token } });
+  return JSON.parse(request1.body as string);
+}
 
 /// /////////////////////// Main Tests /////////////////////////////
 // TODO: Add relevant tests calling the server.ts files
@@ -35,20 +39,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -62,20 +66,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -88,20 +92,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -114,20 +118,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -140,20 +144,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Four',
+          question: 'Four',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -161,20 +165,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Exploring new frontiers broadens our horizons and enriches our lives',
+          question: 'Exploring new frontiers broadens our horizons and enriches our lives',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -187,12 +191,12 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             }
           ]
@@ -200,36 +204,36 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Raina',
+              answer: 'Prince Raina',
               correct: true
             },
             {
-              answerTitle: 'Prince Gill',
+              answer: 'Prince Gill',
               correct: true
             },
             {
-              answerTitle: 'Prince Kohli',
+              answer: 'Prince Kohli',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -242,20 +246,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -268,20 +272,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: -1,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -289,20 +293,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 0,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -315,20 +319,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 90,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -336,20 +340,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(QUESTIONID);
     newQuestion =
         {
-          questionTitle: 'Sample Question 2',
+          question: 'Sample Question 2',
           duration: 100,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -362,20 +366,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 0,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -383,20 +387,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 11,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -409,20 +413,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: '',
+              answer: '',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -430,20 +434,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Exploring new frontiers broadens our horizons and enriches our lives',
+              answer: 'Exploring new frontiers broadens our horizons and enriches our lives',
               correct: true
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -456,20 +460,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     let newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: true
             }
           ]
@@ -477,16 +481,16 @@ describe('Tests of adminQuizCreateQuestion', () => {
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
     newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             },
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: true
             }
           ]
@@ -499,20 +503,20 @@ describe('Tests of adminQuizCreateQuestion', () => {
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion =
         {
-          questionTitle: 'Sample Question 1',
+          question: 'Sample Question 1',
           duration: 5,
           points: 4,
           answers: [
             {
-              answerTitle: 'Prince Wales',
+              answer: 'Prince Wales',
               correct: false
             },
             {
-              answerTitle: 'Prince Charles',
+              answer: 'Prince Charles',
               correct: false
             },
             {
-              answerTitle: 'Prince Diana',
+              answer: 'Prince Diana',
               correct: false
             }
           ]
@@ -530,20 +534,20 @@ describe('Tests of adminQuizUpdateQuestion', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const newQuestion = {
-      questionTitle: 'Sample Question 1',
+      question: 'Sample Question 1',
       duration: 5,
       points: 4,
       answers: [
         {
-          answerTitle: 'Prince Wales',
+          answer: 'Prince Wales',
           correct: true,
         },
         {
-          answerTitle: 'Prince Charles',
+          answer: 'Prince Charles',
           correct: true,
         },
         {
-          answerTitle: 'Prince Diana',
+          answer: 'Prince Diana',
           correct: true,
         },
       ]
@@ -555,20 +559,20 @@ describe('Tests of adminQuizUpdateQuestion', () => {
 
     // Update the question
     const updatedQuestion = {
-      questionTitle: 'Updated Sample Question',
+      question: 'Updated Sample Question',
       duration: 10,
       points: 6,
       answers: [
         {
-          answerTitle: 'Updated Prince Wales',
+          answer: 'Updated Prince Wales',
           correct: false,
         },
         {
-          answerTitle: 'Updated Prince Charles',
+          answer: 'Updated Prince Charles',
           correct: true,
         },
         {
-          answerTitle: 'Updated Prince Diana',
+          answer: 'Updated Prince Diana',
           correct: true,
         },
       ]
@@ -584,20 +588,20 @@ describe('Tests of adminQuizUpdateQuestion', () => {
     // Attempt to update a non-existent question (use a non-existent questionId)
     const nonExistentQuestionId = 12345; // Assuming this questionId doesn't exist
     const updatedQuestion = {
-      questionTitle: 'Updated Sample Question',
+      question: 'Updated Sample Question',
       duration: 10,
       points: 6,
       answers: [
         {
-          answerTitle: 'Updated Prince Wales',
+          answer: 'Updated Prince Wales',
           correct: false,
         },
         {
-          answerTitle: 'Updated Prince Charles',
+          answer: 'Updated Prince Charles',
           correct: true,
         },
         {
-          answerTitle: 'Updated Prince Diana',
+          answer: 'Updated Prince Diana',
           correct: true,
         },
       ]
@@ -611,20 +615,20 @@ describe('Tests of adminQuizUpdateQuestion', () => {
     const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Jane', 'Choi');
     const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
     const newQuestion = {
-      questionTitle: 'Sample Question 1',
+      question: 'Sample Question 1',
       duration: 5,
       points: 4,
       answers: [
         {
-          answerTitle: 'Prince Wales',
+          answer: 'Prince Wales',
           correct: true,
         },
         {
-          answerTitle: 'Prince Charles',
+          answer: 'Prince Charles',
           correct: true,
         },
         {
-          answerTitle: 'Prince Diana',
+          answer: 'Prince Diana',
           correct: true,
         },
       ]
@@ -636,26 +640,359 @@ describe('Tests of adminQuizUpdateQuestion', () => {
 
     // Attempt to update the question with an invalid token (newUser2's token)
     const updatedQuestion = {
-      questionTitle: 'Updated Sample Question',
+      question: 'Updated Sample Question',
       duration: 10,
       points: 6,
       answers: [
         {
-          answerTitle: 'Updated Prince Wales',
+          answer: 'Updated Prince Wales',
           correct: false,
         },
         {
-          answerTitle: 'Updated Prince Charles',
+          answer: 'Updated Prince Charles',
           correct: true,
         },
         {
-          answerTitle: 'Updated Prince Diana',
+          answer: 'Updated Prince Diana',
           correct: true,
         },
       ]
     };
 
     expect(adminQuizUpdateQuestionRequest(newUser2.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual(ERROR);
+  });
+});
+
+describe('Tests of adminQuizQuestionDelete', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Delete Question Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+    let quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Storing questions quizinfo returns to check
+    const quizInfoOutput = {
+      questionId: quizInfo.questions[0].questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    // Check if question is in questions array
+    expect(quizInfo.questions).toEqual([quizInfoOutput]); 
+    expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId)).toEqual({});
+    quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    //Should be an emoty array after deleting question
+    expect(quizInfo.questions).toEqual([]); 
+  });
+
+  test('Delete Question from multiple Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    };
+    const newQuestion2 = {
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestion3 = {
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse1 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion1);
+    const createdQuestionResponse2 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion2);
+    const createdQuestionResponse3 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion3);
+    const questionId1 = createdQuestionResponse1.questionId;
+    const questionId2 = createdQuestionResponse2.questionId;
+    const questionId3 = createdQuestionResponse3.questionId;
+    let quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Storing questions quizinfo returns to check
+    const newQuestionOutput1 = {
+      questionId: questionId1,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestionOutput2 = {
+      questionId: questionId2,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestionOutput3 = {
+      questionId: questionId3,
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    // Confirm if questions are in questions array
+    expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]); 
+    // Delete the question
+    expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId2)).toEqual({});
+    quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    //Should be an array with 2 questions after deleting question as shown below
+    const quizInfoOutput = [{
+      questionId: questionId1,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    },
+    {
+      questionId: questionId3,
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    }];
+    expect(quizInfo.questions).toEqual(quizInfoOutput); 
+  });
+
+  test('Attempt to delete Non-Existent Question', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    // Attempt to delete a non-existent question (use a non-existent questionId)
+    expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, createdQuestionResponse.questionId + 1)).toEqual(ERROR);
+  });
+
+  test('Invalid Token Provided for Delete', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    expect(adminQuizQuestionDeleteRequest('', newQuiz.quizId, questionId)).toEqual(ERROR);
+  });
+
+  test('Valid token but not of user', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Jane', 'Choi');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    expect(adminQuizQuestionDeleteRequest(newUser2.token, newQuiz.quizId, questionId)).toEqual(ERROR);
   });
 });
 /// //////////////////////// Epilouge //////////////////////////////
@@ -669,20 +1006,20 @@ describe('Tests of adminQuizUpdateQuestion', () => {
         const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
         const newQuestion =
         {
-            questionTitle: 'Sample Question 1',
+            question: 'Sample Question 1',
             duration: 5,
             points: 4,
             answers: [
                 {
-                    answerTitle: 'Prince Wales',
+                    answer: 'Prince Wales',
                     correct: true
                 },
                 {
-                    answerTitle: 'Prince Charles',
+                    answer: 'Prince Charles',
                     correct: true
                 },
                 {
-                    answerTitle: 'Prince Diana',
+                    answer: 'Prince Diana',
                     correct: true
                 }
             ]
