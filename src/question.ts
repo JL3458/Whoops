@@ -1,4 +1,5 @@
 import { getData, setData, answer } from './dataStore';
+import { checkValidToken } from './quiz';
 
 /// ///////////////// Function Return Interfaces ///////////////////
 
@@ -21,7 +22,7 @@ interface QuestionCreateReturn {
 
 /// //////////////////// Main Functions ///////////////////////////
 
-export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody) {
+export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody): QuestionCreateReturn | ErrorReturn {
   const data = getData();
 
   // If Token is an empty string
@@ -202,6 +203,53 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   return {
     questionId: existingQuestion.questionId
   };
+}
+export function adminQuizQuestionMove(token: string, newPosition: number, quizId: number, questionId: number): object | ErrorReturn {
+  const data = getData();
+
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
+  }
+  const quiz1 = data.quizzes.find((q) => q.quizId === quizId);
+
+  const Token1 = JSON.parse(decodeURIComponent(token));
+
+  // Checks if quizId refers to an invalid quiz
+  if (!quiz1) {
+    return { error: 'quizId does not refer to a valid quiz' };
+  }
+
+  // Find the question in the quiz
+  const currentQuestionIndex = quiz1.questions.findIndex((q) => q.questionId === questionId);
+
+  // Checks if the questionId does not refer to a valid question within this quiz
+  if (currentQuestionIndex === -1) {
+    return { error: 'Question Id does not refer to a valid question within this quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (quiz1.userId !== Token1.userId) {
+    return { error: 'Valid token is provided, but the user is not an owner of this quiz' };
+  }
+
+  // Checks if newPosition is less than 0 or greater than (n-1)
+  if (newPosition < 0 || newPosition > (quiz1.questions.length - 1)) {
+    return { error: 'Newposition is less than 0, or New position is greater than n-1 where n is the number of questions' };
+  }
+
+  // Checks if the newPosition is the same as the current position
+  if (newPosition === currentQuestionIndex) {
+    return { error: 'Newposition is the same as the current position' };
+  }
+
+  // Update timeLastEdited of the quiz
+  quiz1.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  // Move the question in the list
+  const movedQuestion = quiz1.questions.splice(currentQuestionIndex, 1)[0];
+  quiz1.questions.splice(newPosition, 0, movedQuestion);
+  setData(data);
+  return {};
 }
 
 export function adminQuizQuestionDelete(token: string, quizId: number, questionId: number): object | ErrorReturn {
