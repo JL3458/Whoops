@@ -72,7 +72,7 @@ if (fs.existsSync('./dataBase.json')) {
 
 const saveDataStore = () => {
   const dataString = JSON.stringify(getData());
-  fs.writeFileSync('./dataBase.json', dataString);
+  fs.writeFileSync('/dataBase.json', dataString);
 };
 
 /// ///////////////////////// auth.ts ///////////////////////////////
