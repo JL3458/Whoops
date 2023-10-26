@@ -29,7 +29,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
-import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate } from './question';
+import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove } from './question';
 
 // Set up web app
 const app = express();
@@ -312,6 +312,23 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   res.json(response);
 });
 
+// adminQuizInfo Request
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.query.token as string;
+  const response = adminQuizInfo(token, quizId);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+
+  res.json(response);
+});
+
 /// ////////////////////////// question.ts ///////////////////////////////
 
 // adminQuizQuestionUpdate
@@ -349,21 +366,20 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   res.json(response);
 });
 
-// adminQuizInfo Request
-app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+// adminQuizQuestionMove
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { token, newPosition } = req.body;
   const quizId = parseInt(req.params.quizid);
-  const token = req.query.token as string;
-  const response = adminQuizInfo(token, quizId);
-
-  if ('Token is empty or invalid' in response) {
-    return res.status(401).json(response);
-  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
-    return res.status(403).json(response);
-  } else if ('error' in response) {
-    return res.status(400).json(response);
+  const questionId = parseInt(req.params.questionid);
+  const resp = adminQuizQuestionMove(token, newPosition, quizId, questionId);
+  if ('Token is empty or invalid' in resp) {
+    return res.status(401).json(resp);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in resp) {
+    return res.status(403).json(resp);
+  } else if ('error' in resp) {
+    return res.status(400).json(resp);
   }
-
-  res.json(response);
+  res.json(resp);
 });
 
 // adminQuizQuestionDelete
