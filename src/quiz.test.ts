@@ -25,7 +25,7 @@ export function adminQuizCreateRequest(token: string, name: string, description:
 }
 
 export function adminQuizRemoveRequest(token: string, quizid: number) {
-  const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}`, { json: { token: token } });
+  const request1 = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quizid}`, { qs: { token: token } });
   return JSON.parse(request1.body as string);
 }
 
@@ -686,7 +686,8 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       name: 'Test Quiz 1',
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
-      description: 'This is a test'
+      description: 'This is a test',
+      questions: []
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -694,7 +695,8 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       name: 'Test Quiz 1',
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
-      description: 'Valid description'
+      description: 'Valid description',
+      questions: []
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid testing for description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -702,7 +704,8 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       name: 'Test Quiz 1',
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
-      description: 'Valid testing for description'
+      description: 'Valid testing for description',
+      questions: []
     });
   });
 });
