@@ -1,6 +1,5 @@
 import { getData, setData, answer } from './dataStore';
-import { checkValidToken, adminQuizCreate, adminQuizInfo } from './quiz';
-import { adminAuthRegister } from './auth'
+import { checkValidToken } from './quiz';
 
 /// ///////////////// Function Return Interfaces ///////////////////
 
@@ -19,8 +18,8 @@ interface QuestionCreateReturn {
     questionId: number,
 }
 
-interface DuplicateQuestionReturn { 
-    newQuestionId: number 
+interface DuplicateQuestionReturn {
+    newQuestionId: number
 }
 
 /// //////////////////// Helper Functions //////////////////////////
@@ -302,9 +301,9 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
 export function adminQuizQuestionDuplicate(token: string, quizId: number, questionId: number): ErrorReturn | DuplicateQuestionReturn {
   const data = getData();
 
-  // Checks if the token is empty 
+  // Checks if the token is empty
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid'}
+    return { error: 'Token is empty or invalid' };
   }
 
   const Quiz1 = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -339,7 +338,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
     question: sourceQuestion.question,
     duration: sourceQuestion.duration,
     points: sourceQuestion.points,
-    answers: sourceQuestion.answers, 
+    answers: sourceQuestion.answers,
   };
 
   // Update timeLastEdited of the quiz
@@ -350,56 +349,3 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
 
   return { newQuestionId: newQuestionId };
 }
-const User1 = adminAuthRegister('Validemail@gmail.com', 'password123', 'Ujjwal', 'Uberoi');
-const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
-const Question1 =
-        {
-          question: 'Sample Question 1',
-          duration: 5,
-          points: 4,
-          answers: [
-            {
-              answer: 'Prince Wales',
-              correct: true
-            },
-            {
-              answer: 'Prince Charles',
-              correct: true
-            },
-            {
-              answer: 'Prince Diana',
-              correct: true
-            }
-          ]
-        };
-const Question2 = {
-    question: 'Sample Question 2',
-    duration: 5,
-    points: 4,
-    answers: [
-      {
-        answer: 'Prince Wales',
-        correct: true
-      },
-      {
-        answer: 'Prince Charles',
-        correct: true
-      },
-      {
-        answer: 'Prince Diana',
-        correct: true
-      }
-    ]
-  };
-
-  /*const newQuestion1 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
-  const newQuestion2 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question2);
-  const newOutput1 = adminQuizInfo(User1.token, Quiz1.quizId);
-  console.log(newOutput1.questions);
-
-  console.log(adminQuizQuestionDuplicate(User1.token, Quiz1.quizId, newQuestion1.questionId));
-
-  const newOutput2 = adminQuizInfo(User1.token, Quiz1.quizId);
-
-  console.log(newOutput2.questions);
-  */

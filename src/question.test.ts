@@ -1488,7 +1488,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
         ]
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
-    expect(adminQuizQuestionDuplicateRequest('',Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
+    expect(adminQuizQuestionDuplicateRequest('', Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
   });
   test('Valid token is provided, but user is not an owner of this quiz', () => {
     const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
@@ -1515,7 +1515,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           ]
         };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
-    expect(adminQuizQuestionDuplicateRequest(User2.token,Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
+    expect(adminQuizQuestionDuplicateRequest(User2.token, Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
   });
   test('QuizId does not refer to a valid quiz', () => {
     const User1 = authRegisterRequest('maxverstappen@gmail.com', 'password123', 'Steph', 'Curry');
