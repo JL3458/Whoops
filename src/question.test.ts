@@ -11,8 +11,8 @@ const QUESTIONID = { questionId: expect.any(Number) };
 
 /// //////////////////// Helper Functions //////////////////////
 
-export function adminQuizCreateQuestionRequest(token: string, quizid: number, question: questionBody) {
-  const request1 = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/question`, { json: { token: token, question: question } });
+export function adminQuizCreateQuestionRequest(token: string, quizid: number, questionBody : questionBody) {
+  const request1 = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/question`, { json: { token: token, questionBody: questionBody } });
   return JSON.parse(request1.body as string);
 }
 export function adminQuizUpdateQuestionRequest(token: string, quizid: number, questionId: number, updatedQuestion: questionBody) {
@@ -28,6 +28,11 @@ export function adminQuizQuestionDeleteRequest(token: string, quizid: number, qu
 
 export function adminQuizQuestionMoveRequest(token: string, newPosition: number, quizId: number, questionId: number) {
   const res = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`, { json: { token: token, newPosition: newPosition } });
+  return JSON.parse(res.body as string);
+}
+
+export function adminQuizQuestionDuplicateRequest(token: string, quizId: number, questionId: number) {
+  const res = request('POST', SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`, { json: { token: token } });
   return JSON.parse(res.body as string);
 }
 
@@ -1435,6 +1440,273 @@ describe('Tests of adminQuizQuestionMove', () => {
     {
       questionId: newQuestion1.questionId,
       question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    }]);
+  });
+});
+describe('Tests of adminQuizQuestionDuplicate', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Empty or Invalid', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ]
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
+    expect(adminQuizQuestionDuplicateRequest('',Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
+  });
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ]
+        };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
+    expect(adminQuizQuestionDuplicateRequest(User2.token,Quiz1.quizid, newQuestion.questionId)).toEqual(ERROR);
+  });
+  test('QuizId does not refer to a valid quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ]
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
+    expect(adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId + 1, newQuestion.questionId)).toEqual(ERROR);
+  });
+
+  test('QuestionId does not refer to a valid question within this quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ]
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
+    expect(adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion.questionId + 1)).toEqual(ERROR);
+  });
+  test('Valid test', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ]
+      };
+    const Question2 =
+  {
+    question: 'Sample Question 2',
+    duration: 5,
+    points: 4,
+    answers: [
+      {
+        answer: 'Prince Wales',
+        correct: true
+      },
+      {
+        answer: 'Prince Charles',
+        correct: true
+      },
+      {
+        answer: 'Prince Diana',
+        correct: true
+      }
+    ]
+  };
+
+    const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const newQuestion2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2);
+
+    const newOutput1 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+
+    expect(newOutput1.questions).toEqual([{
+      questionId: newQuestion1.questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    },
+    {
+      questionId: newQuestion2.questionId,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    }]);
+
+    const newOutput3 = adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion2.questionId);
+
+    const newOutput2 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+
+    expect(newOutput2.questions).toEqual([{
+      questionId: newQuestion1.questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    },
+    {
+      questionId: newQuestion2.questionId,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    },
+    {
+      questionId: newOutput3.newQuestionId,
+      question: 'Sample Question 2',
       duration: 5,
       points: 4,
       answers: [
