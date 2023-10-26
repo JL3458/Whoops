@@ -268,35 +268,39 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   return {};
 }
 
-export function adminQuizDescriptionUpdate(authUserId: number, quizId: number, description: string): ErrorReturn | null {
+export function adminQuizDescriptionUpdate(token: string, quizId: number, description: string): ErrorReturn | object {
   const data = getData();
+  const Quiz1 = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
-  // Checks if authUserId refers to an invalid user
-  if (CheckValidUserId(authUserId)) {
-    return { error: 'authUserId does not exist' };
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid' };
   }
 
-  // Checks if quizId refers to an invalid quiz
-  if (data.quizzes.find(item => item.quizId === quizId) === undefined) {
-    return { error: 'quizId does not exist' };
+  const Token1 = JSON.parse(decodeURIComponent(token));
+
+  // Checks if quizId is invalid
+  if (Quiz1 === undefined) {
+    return { error: 'QuizId does not refer to a valid quizId' };
   }
 
-  // Checks if description si more than 100 characters in length (Invalid case)
-  if ((/^.{101,}$/.test(description))) {
-    return { error: 'description is not valid' };
+  // Checks if the quiz belongs to the current logged in user
+  if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
-  // Checks whether quizId does not refer to a quiz that this user owns
-  const quizToUpdate = data.quizzes.find(item => item.quizId === quizId);
-  if (quizToUpdate !== undefined && quizToUpdate.userId !== authUserId) {
-    return { error: 'quizId does not refer to a quiz that this user owns' };
+  // Checks whether description is more than 100 characters in length
+  if (description.length > 100) {
+    return { error: 'Description is more than 100 characters in length' };
   }
 
   // Updates the quiz description
-  if (quizToUpdate) {
-    quizToUpdate.description = description;
-    quizToUpdate.timeLastEdited = Math.floor(Date.now() / 1000);
+  if (Quiz1) {
+    Quiz1.description = description;
+    Quiz1.timeLastEdited = Math.floor(Date.now() / 1000);
+
+    setData(data);
   }
+  return {};
 }
 
 export function adminQuizTransfer(token: string, quizId: number, userEmail: string) {
@@ -308,6 +312,11 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
 
   // Checks if quizId refers to an invalid quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -445,4 +454,3 @@ export function adminQuizTrashEmpty (token: string, quizIds: string) {
   }
   return {};
 }
-/// //////////////////////////////  Epilogue ///////////////////////////////////
