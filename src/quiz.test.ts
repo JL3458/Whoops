@@ -424,7 +424,8 @@ describe('Tests of adminQuizInfo', () => {
       name: 'Test Quiz 1',
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
-      description: 'This is a test'
+      description: 'This is a test',
+      questions: []
     });
   });
 });

@@ -29,7 +29,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
-import { adminQuizCreateQuestion } from './question';
+import { adminQuizCreateQuestion, adminQuizQuestionUpdate } from './question';
 
 // Set up web app
 const app = express();
@@ -313,6 +313,24 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
 });
 
 /// ////////////////////////// question.ts ///////////////////////////////
+
+// adminQuizQuestionUpdate
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const { token, updatedQuestion } = req.body;
+
+  const response = adminQuizQuestionUpdate(token, quizId, questionId, updatedQuestion);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  res.json(response);
+});
 
 // adminQuizCreateQuestion Request
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {

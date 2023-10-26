@@ -25,6 +25,7 @@ interface QuizInfoReturn {
     timeCreated: number,
     timeLastEdited: number,
     description: string,
+    questions: question[]
 }
 
 interface QuizViewTrashReturn {
@@ -214,7 +215,8 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     name: tempQuiz.name,
     timeCreated: tempQuiz.timeCreated,
     timeLastEdited: tempQuiz.timeLastEdited,
-    description: tempQuiz.description
+    description: tempQuiz.description,
+    questions: tempQuiz.questions
   };
 }
 
