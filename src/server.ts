@@ -30,6 +30,7 @@ import {
   adminQuizDescriptionUpdate
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
+import { setData, getData } from './dataStore';
 
 // Set up web app
 const app = express();
@@ -58,8 +59,21 @@ app.get('/echo', (req: Request, res: Response) => {
   if ('error' in ret) {
     res.status(400);
   }
+  saveDataStore();
   return res.json(ret);
 });
+
+/// ///////////////////////// dataBase.json ///////////////////////////////
+
+if (fs.existsSync('./dataBase.json')) {
+  const database = fs.readFileSync('./dataBase.json');
+  setData(JSON.parse(String(database)));
+}
+
+const saveDataStore = () => {
+  const dataString = JSON.stringify(getData());
+  fs.writeFileSync('./dataBase.json', dataString);
+};
 
 /// ///////////////////////// auth.ts ///////////////////////////////
 
@@ -75,6 +89,7 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -90,6 +105,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -105,6 +121,7 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
   if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -120,6 +137,7 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   if ('error' in response) {
     return res.status(401).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -137,6 +155,7 @@ app.put('/v1/admin/user/details', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -154,6 +173,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -161,7 +181,9 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // Clear Request
 app.delete('/v1/clear', (req: Request, res: Response) => {
-  res.json(clear());
+  const response = clear();
+  saveDataStore();
+  res.json(response);
 });
 
 /// ///////////////////////// quiz.ts ///////////////////////////////
@@ -178,6 +200,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -192,6 +215,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -208,6 +232,7 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
     return res.status(403).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -224,6 +249,7 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -240,6 +266,7 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -257,6 +284,7 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   } else if ('Quiz is not owned by the owner' in resp) {
     return res.status(403).json(resp);
   }
+  saveDataStore();
   res.json(resp);
 });
 
@@ -274,6 +302,7 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -290,6 +319,7 @@ app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -309,6 +339,7 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
     return res.status(403).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -325,7 +356,7 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
-
+  saveDataStore();
   res.json(response);
 });
 
@@ -346,6 +377,7 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -363,6 +395,7 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -379,6 +412,7 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
   } else if ('error' in resp) {
     return res.status(400).json(resp);
   }
+  saveDataStore();
   res.json(resp);
 });
 
@@ -397,6 +431,7 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
   } else if ('error' in response) {
     return res.status(400).json(response);
   }
+  saveDataStore();
   res.json(response);
 });
 
@@ -415,7 +450,7 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
   } else if ('error' in resp) {
     return res.status(400).json(resp);
   }
-
+  saveDataStore();
   res.json(resp);
 });
 // ====================================================================

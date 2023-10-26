@@ -101,11 +101,8 @@ export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn
   // convert token to an object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
-  // assigns the current token to a usertoken variable
-  const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
-
   // finds the user that is corresponding to the token
-  const user = data.users.find((user) => user.userId === userToken.userId);
+  const user = data.users.find((user) => user.userId === tempToken.userId);
 
   // Concatenating first and last name
   const fullName = user.nameFirst + ' ' + user.nameLast;
