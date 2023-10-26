@@ -15,6 +15,12 @@ export function adminQuizCreateQuestionRequest(token: string, quizid: number, qu
   const request1 = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/question`, { json: { token: token, question: question } });
   return JSON.parse(request1.body as string);
 }
+export function adminQuizUpdateQuestionRequest(token: string, quizid: number, questionId: number, updatedQuestion: questionBody) {
+  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/question/${questionId}`, {
+    json: { token: token, updatedQuestion: updatedQuestion },
+  });
+  return JSON.parse(request1.body as string);
+}
 
 /// /////////////////////// Main Tests /////////////////////////////
 // TODO: Add relevant tests calling the server.ts files
@@ -515,6 +521,143 @@ describe('Tests of adminQuizCreateQuestion', () => {
   });
 });
 
+describe('Tests of adminQuizUpdateQuestion', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Update Question Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      questionTitle: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerTitle: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerTitle: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerTitle: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    // Update the question
+    const updatedQuestion = {
+      questionTitle: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answerTitle: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answerTitle: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answerTitle: 'Updated Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    expect(adminQuizUpdateQuestionRequest(newUser.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual(QUESTIONID);
+  });
+
+  test('Attempt to Update Non-Existent Question', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+
+    // Attempt to update a non-existent question (use a non-existent questionId)
+    const nonExistentQuestionId = 12345; // Assuming this questionId doesn't exist
+    const updatedQuestion = {
+      questionTitle: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answerTitle: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answerTitle: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answerTitle: 'Updated Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    expect(adminQuizUpdateQuestionRequest(newUser.token, newQuiz.quizId, nonExistentQuestionId, updatedQuestion)).toEqual(ERROR);
+  });
+
+  test('Invalid Token Provided for Update', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Jane', 'Choi');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      questionTitle: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerTitle: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerTitle: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerTitle: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    // Attempt to update the question with an invalid token (newUser2's token)
+    const updatedQuestion = {
+      questionTitle: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answerTitle: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answerTitle: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answerTitle: 'Updated Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    expect(adminQuizUpdateQuestionRequest(newUser2.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual(ERROR);
+  });
+});
 /// //////////////////////// Epilouge //////////////////////////////
 
 /*
