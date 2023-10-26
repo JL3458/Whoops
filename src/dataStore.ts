@@ -10,13 +10,13 @@ export interface user {
 }
 
 export interface answer {
-  answerTitle: string,
+  answer: string,
   correct: boolean
 }
 
 export interface question {
   questionId: number,
-  questionTitle: string,
+  question: string,
   duration: number,
   points: number,
   answers: answer[]

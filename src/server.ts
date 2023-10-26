@@ -29,7 +29,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
-import { adminQuizCreateQuestion, adminQuizQuestionUpdate } from './question';
+import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate } from './question';
 
 // Set up web app
 const app = express();
@@ -198,7 +198,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 // adminQuizRemove Request
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token } = req.body;
+  const token = req.query.token as string;
   const response = adminQuizRemove(token, quizId);
 
   if ('quizId is not of a valid quiz' in response) {
@@ -363,6 +363,24 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
     return res.status(400).json(response);
   }
 
+  res.json(response);
+});
+
+// adminQuizQuestionDelete
+app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const token = req.query.token as string;
+
+  const response = adminQuizQuestionDelete(token, quizId, questionId);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
   res.json(response);
 });
 // ====================================================================

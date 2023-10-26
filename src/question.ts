@@ -3,7 +3,7 @@ import { getData, setData, answer } from './dataStore';
 /// ///////////////// Function Return Interfaces ///////////////////
 
 export interface questionBody {
-    questionTitle: string,
+    question: string,
     duration: number,
     points: number,
     answers: answer[]
@@ -21,7 +21,7 @@ interface QuestionCreateReturn {
 
 /// //////////////////// Main Functions ///////////////////////////
 
-export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody) : QuestionCreateReturn | ErrorReturn {
+export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody) {
   const data = getData();
 
   // If Token is an empty string
@@ -49,7 +49,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
   }
 
   // Checks if Question string is valid
-  if (question.questionTitle.length < 5 || question.questionTitle.length > 50) {
+  if (question.question.length < 5 || question.question.length > 50) {
     return { error: 'Question string should be between 3 and 30 characters' };
   }
 
@@ -64,7 +64,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
   }
 
   // Checks if total duration of all questions are above 3 minutes
-  const totalQuestionDuration = tempQuiz.questions.filter((question) => question.quizId === quizId).reduce((sum, currQues) => sum + currQues.duration, 0);
+  const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
   if ((totalQuestionDuration + question.duration) > 180) {
     return { error: 'The sum of the question durations in the quiz exceeds 3 minutes' };
   }
@@ -75,14 +75,14 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
   }
 
   // Check if Answer Length is Invalid
-  const invalidAnswerTitle = question.answers.find((answer) => answer.answerTitle.length < 1 || answer.answerTitle.length > 30);
-  if (invalidAnswerTitle !== undefined) {
+  const invalidAnswer = question.answers.find((answer) => answer.answer.length < 1 || answer.answer.length > 30);
+  if (invalidAnswer !== undefined) {
     return { error: 'Answer length should be between 1 and 30 characters' };
   }
 
   // Check if answer titles contain a duplicate
-  const answerTitles = question.answers.map(answer => answer.answerTitle);
-  if (answerTitles.some((title, index) => answerTitles.indexOf(title) !== index)) {
+  const answers = question.answers.map(answer => answer.answer);
+  if (answers.some((title, index) => answers.indexOf(title) !== index)) {
     return { error: 'Answers should not contain duplicates' };
   }
 
@@ -94,9 +94,8 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
 
   const questionIdGenerator = tempQuiz.questions.length + 1;
   const tempQuestion = {
-    quizId: quizId,
     questionId: questionIdGenerator,
-    questionTitle: question.questionTitle,
+    question: question.question,
     duration: question.duration,
     points: question.points,
     answers: question.answers
@@ -156,7 +155,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   }
 
   // Checks if total duration of all questions are above 3 minutes
-  const totalQuestionDuration = tempQuiz.questions.filter((question) => question.quizId === quizId).reduce((sum, currQues) => sum + currQues.duration, 0);
+  const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
   if ((totalQuestionDuration + updatedQuestion.duration) > 180) {
     return { error: 'The sum of the question durations in the quiz exceeds 3 minutes' };
   }
@@ -167,14 +166,14 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   }
 
   // Check if Answer Length is Invalid
-  const invalidAnswerTitle = updatedQuestion.answers.find((answer) => answer.answerTitle.length < 1 || answer.answerTitle.length > 30);
-  if (invalidAnswerTitle !== undefined) {
+  const invalidAnswer = updatedQuestion.answers.find((answer) => answer.answer.length < 1 || answer.answer.length > 30);
+  if (invalidAnswer !== undefined) {
     return { error: 'Answer length should be between 1 and 30 characters' };
   }
 
   // Check if answer titles contain a duplicate
-  const answerTitles = updatedQuestion.answers.map(answer => answer.answerTitle);
-  if (answerTitles.some((title, index) => answerTitles.indexOf(title) !== index)) {
+  const answers = updatedQuestion.answers.map(answer => answer.answer);
+  if (answers.some((title, index) => answers.indexOf(title) !== index)) {
     return { error: 'Answers should not contain duplicates' };
   }
 
@@ -185,14 +184,14 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   }
 
   // Perform your validation for the updated updatedQuestion here
-  if (updatedQuestion.questionTitle.length < 5 || updatedQuestion.questionTitle.length > 50) {
+  if (updatedQuestion.question.length < 5 || updatedQuestion.question.length > 50) {
     return { error: 'Question string should be between 5 and 50 characters' };
   }
 
   // Check other conditions for the updated question as needed
 
   // Update the existing question with the new data
-  existingQuestion.questionTitle = updatedQuestion.questionTitle;
+  existingQuestion.question = updatedQuestion.question;
   existingQuestion.duration = updatedQuestion.duration;
   existingQuestion.points = updatedQuestion.points;
   existingQuestion.answers = updatedQuestion.answers;
@@ -203,4 +202,46 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   return {
     questionId: existingQuestion.questionId
   };
+}
+
+export function adminQuizQuestionDelete(token: string, quizId: number, questionId: number): object | ErrorReturn {
+  const data = getData();
+
+  // If Token is an empty string
+  if (token === '') {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Converts token string to token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if Token is Empty or invalid
+  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
+    return { error: 'Token is empty or invalid' };
+  }
+
+  // Finds the quiz
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (tempQuiz === undefined) {
+    return { error: 'quizId is not of a valid quiz' };
+  }
+
+  // Find the question in the quiz by questionId
+  const existingQuestion = tempQuiz.questions.findIndex((ques) => ques.questionId === questionId);
+
+  // Check if the question with the specified questionId exists
+  if (existingQuestion === -1) {
+    return { error: 'Specified questionId does not exist in this quiz' };
+  }
+
+  // Checks if the quiz belongs to the current logged-in user
+  if (tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but the user is not the owner of this quiz' };
+  }
+
+  // Delete the question
+  tempQuiz.questions.splice(existingQuestion, 1);
+
+  setData(data);
+  return {};
 }
