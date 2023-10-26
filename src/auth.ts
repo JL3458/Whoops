@@ -25,7 +25,7 @@ const PATTERN = /^[a-zA-Z\s\-']+$/;
 const LETTERS = /[a-zA-Z]/;
 const NUMS = /\d/;
 
-export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string) {
+export function adminAuthRegister(email: string, password: string, nameFirst: string, nameLast: string): AuthReturn | ErrorReturn {
   const data = getData();
 
   // Checking if email is valid
