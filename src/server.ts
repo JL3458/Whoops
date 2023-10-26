@@ -29,7 +29,7 @@ import {
   adminQuizNameUpdate,
   adminQuizDescriptionUpdate
 } from './quiz';
-import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove } from './question';
+import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 
 // Set up web app
 const app = express();
@@ -352,9 +352,9 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
 // adminQuizCreateQuestion Request
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token, question } = req.body;
+  const { token, questionBody } = req.body;
 
-  const response = adminQuizCreateQuestion(token, quizId, question);
+  const response = adminQuizCreateQuestion(token, quizId, questionBody);
 
   if ('Token is empty or invalid' in response) {
     return res.status(401).json(response);
@@ -398,6 +398,25 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
     return res.status(400).json(response);
   }
   res.json(response);
+});
+
+// adminQuizQuestionDuplicate
+app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+
+  const resp = adminQuizQuestionDuplicate(token, quizId, questionId);
+
+  if ('Token is empty or invalid' in resp) {
+    return res.status(401).json(resp);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in resp) {
+    return res.status(403).json(resp);
+  } else if ('error' in resp) {
+    return res.status(400).json(resp);
+  }
+
+  res.json(resp);
 });
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
