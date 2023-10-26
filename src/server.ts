@@ -228,9 +228,17 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
 
 // adminQuizNameUpdate Request
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
-  const quizid = parseInt(req.params.quizid);
+  const quizId = parseInt(req.params.quizid);
   const { token, name } = req.body;
-  const response = adminQuizNameUpdate(token, quizid, name);
+  const response = adminQuizNameUpdate(token, quizId, name);
+
+  if ('Token is empty or invalid' in response) {
+    return res.status(401).json(response);
+  } else if ('Valid token is provided, but user is not an owner of this quiz' in response) {
+    return res.status(403).json(response);
+  } else if ('error' in response) {
+    return res.status(400).json(response);
+  }
   res.json(response);
 });
 

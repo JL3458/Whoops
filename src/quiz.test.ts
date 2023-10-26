@@ -24,8 +24,8 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   return JSON.parse(request1.body as string);
 }
 
-export function adminQuizNameUpdateRequest(token: string, quizid: number, newName: string) {
-  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/name`, { qs: { token: token, newName: newName } });
+export function adminQuizNameUpdateRequest(token: string, quizId: number, name: string) {
+  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizId}/name`, { json: { token, name } });
   return JSON.parse(request1.body as string);
 }
 
@@ -278,7 +278,7 @@ describe('Tests of adminQuizRemove', () => {
   });
 });
 
-/* describe('Tests of adminQuizNameUpdate', () => {
+describe('Tests of adminQuizNameUpdate', () => {
   beforeEach(() => {
     clearRequest();
   });
@@ -325,9 +325,9 @@ describe('Tests of adminQuizRemove', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     expect(adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'Test Quiz 2')).toEqual({});
-  })
+  });
 });
-*/
+
 describe('Tests of adminQuizTransfer', () => {
   const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
   authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
