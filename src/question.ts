@@ -1,5 +1,6 @@
 import { getData, setData, answer } from './dataStore';
-import { checkValidToken } from './quiz';
+import { checkValidToken, adminQuizCreate, adminQuizInfo } from './quiz';
+import { adminAuthRegister } from './auth'
 
 /// ///////////////// Function Return Interfaces ///////////////////
 
@@ -16,6 +17,10 @@ interface ErrorReturn {
 
 interface QuestionCreateReturn {
     questionId: number,
+}
+
+interface DuplicateQuestionReturn { 
+    newQuestionId: number 
 }
 
 /// //////////////////// Helper Functions //////////////////////////
@@ -293,3 +298,108 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   setData(data);
   return {};
 }
+
+export function adminQuizQuestionDuplicate(token: string, quizId: number, questionId: number): ErrorReturn | DuplicateQuestionReturn {
+  const data = getData();
+
+  // Checks if the token is empty 
+  if (checkValidToken(token)) {
+    return { error: 'Token is empty or invalid'}
+  }
+
+  const Quiz1 = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  // Checks if quizId refers to an invalid quiz
+  if (Quiz1 === undefined) {
+    return { error: 'QuizId does not refer to a valid quiz' };
+  }
+
+  // Find the source question in the quiz
+  const sourceQuestionIndex = Quiz1.questions.findIndex((question) => question.questionId === questionId);
+
+  // Checks if the source question is not found
+  if (sourceQuestionIndex === -1) {
+    return { error: 'Question Id does not refer to a valid question within this quiz' };
+  }
+
+  const Token1 = JSON.parse(decodeURIComponent(token));
+
+  // Checks if the quiz belongs to the current logged-in user
+  if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
+    return { error: 'Valid token is provided, but the user is not an owner of this quiz' };
+  }
+
+  // Duplicate the source question manually
+  const sourceQuestion = Quiz1.questions[sourceQuestionIndex];
+  const newQuestionId = Quiz1.questions.length + 1;
+
+  const duplicatedQuestion = {
+    // Manually copy each property from sourceQuestion
+    questionId: newQuestionId,
+    question: sourceQuestion.question,
+    duration: sourceQuestion.duration,
+    points: sourceQuestion.points,
+    answers: sourceQuestion.answers, 
+  };
+
+  // Update timeLastEdited of the quiz
+  Quiz1.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  // Insert the duplicated question immediately after the source question
+  Quiz1.questions.splice(sourceQuestionIndex + 1, 0, duplicatedQuestion);
+
+  return { newQuestionId: newQuestionId };
+}
+const User1 = adminAuthRegister('Validemail@gmail.com', 'password123', 'Ujjwal', 'Uberoi');
+const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ]
+        };
+const Question2 = {
+    question: 'Sample Question 2',
+    duration: 5,
+    points: 4,
+    answers: [
+      {
+        answer: 'Prince Wales',
+        correct: true
+      },
+      {
+        answer: 'Prince Charles',
+        correct: true
+      },
+      {
+        answer: 'Prince Diana',
+        correct: true
+      }
+    ]
+  };
+
+  /*const newQuestion1 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+  const newQuestion2 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question2);
+  const newOutput1 = adminQuizInfo(User1.token, Quiz1.quizId);
+  console.log(newOutput1.questions);
+
+  console.log(adminQuizQuestionDuplicate(User1.token, Quiz1.quizId, newQuestion1.questionId));
+
+  const newOutput2 = adminQuizInfo(User1.token, Quiz1.quizId);
+
+  console.log(newOutput2.questions);
+  */
