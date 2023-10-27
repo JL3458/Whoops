@@ -129,7 +129,12 @@ export function adminQuizCreate(token: string, name: string, description: string
   }
 
   // Defines the new quiz which is to be added in format required.
-  const quizIdGenerator = data.quizzes.length + 10;
+  const quizIdGenerator = data.quizIdCounter + 10;
+
+  // Keeping track of number of quizzes
+
+  data.quizIdCounter++;
+
   const tempQuizStorage = {
     quizId: quizIdGenerator,
     name: name,
@@ -236,7 +241,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
 
   // Checks if the quiz belongs to the current logged-in user
   if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but the user is not the owner of this quiz' };
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Checks if name contains invalid characters. Valid characters are alphanumeric and spaces
@@ -320,11 +325,6 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
     return { error: 'quizId is not of a valid quiz' };
   }
 
-  // Checks if the quiz belongs to the current logged in user
-  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
-  }
-
   // Check if userEmail is valid
   const tempTargertUser = data.users.find((user) => user.email === userEmail);
   if (tempTargertUser === undefined) {
@@ -334,6 +334,11 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
   // Check if userEmail is the current logged in user
   if (tempTargertUser !== undefined && tempTargertUser.userId === tempToken.userId) {
     return { error: 'userEmail is the current logged in user' };
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Check if Quiz ID refers to a quiz that has a name that is already used by the target user
@@ -422,7 +427,7 @@ export function adminQuizTrashEmpty (token: string, quizIds: string): object | E
   const tempToken = JSON.parse(decodeURIComponent(token));
 
   // converts the quizIds string into an array
-  const quizIdArray: number[] = quizIds.split(',').map(Number);
+  const quizIdArray = JSON.parse(quizIds);
 
   for (const quizId of quizIdArray) {
     const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);

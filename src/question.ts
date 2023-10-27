@@ -114,7 +114,8 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     answer.colour = generateRandomColorName();
   });
 
-  const questionIdGenerator = tempQuiz.questions.length + 1;
+  const questionIdGenerator = data.questionIdCounter + 1;
+  data.questionIdCounter++;
   const tempQuestion = {
     questionId: questionIdGenerator,
     question: question.question,
@@ -132,7 +133,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
   };
 }
 
-export function adminQuizQuestionUpdate(token: string, quizId: number, questionId: number, updatedQuestion: questionBody): QuestionCreateReturn | ErrorReturn {
+export function adminQuizQuestionUpdate(token: string, quizId: number, questionId: number, updatedQuestion: questionBody): object | ErrorReturn {
   const data = getData();
 
   // If Token is an empty string
@@ -151,7 +152,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
 
   // Checks if the quiz belongs to the current logged-in user
   if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but the user is not the owner of this quiz' };
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Find the question in the quiz by questionId
@@ -213,12 +214,14 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   existingQuestion.points = updatedQuestion.points;
   existingQuestion.answers = updatedQuestion.answers;
 
+  existingQuestion.answers.forEach((answer) => {
+    answer.colour = generateRandomColorName();
+  });
+
   tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);
-  return {
-    questionId: existingQuestion.questionId
-  };
+  return {};
 }
 
 export function adminQuizQuestionMove(token: string, newPosition: number, quizId: number, questionId: number): object | ErrorReturn {
@@ -246,7 +249,7 @@ export function adminQuizQuestionMove(token: string, newPosition: number, quizId
 
   // Checks if the quiz belongs to the current logged in user
   if (quiz1.userId !== Token1.userId) {
-    return { error: 'Valid token is provided, but the user is not an owner of this quiz' };
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Checks if newPosition is less than 0 or greater than (n-1)
@@ -296,7 +299,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
 
   // Checks if the quiz belongs to the current logged-in user
   if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but the user is not the owner of this quiz' };
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Delete the question
@@ -333,7 +336,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
 
   // Checks if the quiz belongs to the current logged-in user
   if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
-    return { error: 'Valid token is provided, but the user is not an owner of this quiz' };
+    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
   // Duplicate the source question manually

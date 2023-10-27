@@ -44,6 +44,8 @@ interface DataStore {
   quizzes: quiz[]
   tokens: token[]
   trash: quiz[]
+  quizIdCounter: number
+  questionIdCounter: number
 }
 
 let data: DataStore = {
@@ -51,6 +53,8 @@ let data: DataStore = {
   quizzes: [],
   tokens: [],
   trash: [],
+  quizIdCounter: 0,
+  questionIdCounter: 0
 };
 
 // Use get() to access the data
