@@ -366,9 +366,9 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
-  const { token, updatedQuestion } = req.body;
+  const { token, questionBody } = req.body;
 
-  const response = adminQuizQuestionUpdate(token, quizId, questionId, updatedQuestion);
+  const response = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
 
   if ('Token is empty or invalid' in response) {
     return res.status(401).json(response);
