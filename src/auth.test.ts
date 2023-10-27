@@ -193,7 +193,7 @@ describe('Tests for adminUserDetails', () => {
   });
 
   test('Invalid token', () => {
-    expect(userDetailsRequest('34698743')).toEqual(ERROR);
+    expect(userDetailsRequest('asca')).toEqual(ERROR);
     expect(userDetailsRequest('234987')).toEqual(ERROR);
   });
 

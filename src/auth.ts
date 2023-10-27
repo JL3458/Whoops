@@ -227,6 +227,16 @@ function checkValidToken(token: string): boolean {
     return true;
   }
 
+  try {
+    // Check the function that might throw a SyntaxError
+    JSON.parse(decodeURIComponent(token));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      // Handle the SyntaxError here
+      return true;
+    }
+  }
+
   // convert token to an object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
