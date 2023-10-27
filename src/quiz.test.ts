@@ -29,8 +29,8 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   return JSON.parse(request1.body as string);
 }
 
-export function adminQuizNameUpdateRequest(token: string, quizId: number, name: string) {
-  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizId}/name`, { json: { token, name } });
+export function adminQuizNameUpdateRequest(token: string, quizid: number, name: string) {
+  const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/name`, { json: { token, name } });
   return JSON.parse(request1.body as string);
 }
 
