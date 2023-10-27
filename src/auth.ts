@@ -234,7 +234,7 @@ function checkValidToken(token: string): boolean {
     if (error instanceof SyntaxError) {
       // Handle the SyntaxError here
       return true;
-    } 
+    }
   }
 
   // convert token to an object
