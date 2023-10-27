@@ -30,13 +30,13 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
 
   // Checking if email is valid
   if (validator.isEmail(email) === false) {
-    return { error: 'Invalid Entry' };
+    return { error: 'Invalid Email entered' };
   }
 
   // Checking if email is in use by another user
   for (const user of data.users) {
     if (user.email === email) {
-      return { error: 'Email Already in Use' };
+      return { error: 'Entered Email is Already in Use' };
     }
   }
   // Checking if first and last name meet the required conditions

@@ -574,7 +574,7 @@ describe('Tests for adminQuizTrashEmpty', () => {
   test('Token is Invalid', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
-    const quizIndexString = quizIndex.quizId.toString();
+    const quizIndexString = JSON.stringify([quizIndex.quizId]);
     expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
     expect(adminQuizTrashEmptyRequest('', quizIndexString)).toEqual(ERROR);
   });
@@ -583,21 +583,21 @@ describe('Tests for adminQuizTrashEmpty', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
-    const quizIndexString = quizIndex.quizId.toString();
+    const quizIndexString = JSON.stringify([quizIndex.quizId + 1]);
     expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
-    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndexString + 1)).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest(newUser.token, quizIndexString)).toEqual(ERROR);
   });
 
   test('Removal when there are no quizzes', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-    expect(adminQuizTrashEmptyRequest(newUser.token, '100')).toEqual(ERROR);
+    expect(adminQuizTrashEmptyRequest(newUser.token, JSON.stringify([100]))).toEqual(ERROR);
   });
 
   test('Quiz is not owned by the owner', () => {
     const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascharanous');
     const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
-    const quizIndexString = quizIndex.quizId.toString();
+    const quizIndexString = JSON.stringify([quizIndex.quizId]);
     expect(adminQuizRemoveRequest(newUser1.token, quizIndex.quizId)).toEqual({});
     expect(adminQuizTrashEmptyRequest(newUser2.token, quizIndexString)).toEqual(ERROR);
   });
@@ -605,7 +605,7 @@ describe('Tests for adminQuizTrashEmpty', () => {
   test('Deleting one quiz, Normal Case', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
-    const quizIndexString = quizIndex.quizId.toString();
+    const quizIndexString = JSON.stringify([quizIndex.quizId]);
     adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
     adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
@@ -622,10 +622,7 @@ describe('Tests for adminQuizTrashEmpty', () => {
     const quizIndex1 = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
     const quizIndex2 = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
     const quizIndex3 = adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
-    const quizIndexString1 = quizIndex1.quizId.toString();
-    const quizIndexString2 = quizIndex2.quizId.toString();
-    const quizIndexString3 = quizIndex3.quizId.toString();
-    const combinedQuizIds = [quizIndexString1, quizIndexString2, quizIndexString3].join(',');
+    const combinedQuizIds = JSON.stringify([quizIndex1.quizId, quizIndex2.quizId, quizIndex3.quizId]);
     adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
 
     // We wont be able to make new Quizzes

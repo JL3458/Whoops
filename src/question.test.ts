@@ -742,7 +742,7 @@ describe('Tests of adminQuizUpdateQuestion', () => {
       ]
     };
 
-    expect(adminQuizUpdateQuestionRequest(newUser.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual(QUESTIONID);
+    expect(adminQuizUpdateQuestionRequest(newUser.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual({});
   });
 
   test('Attempt to Update Non-Existent Question', () => {
