@@ -533,8 +533,162 @@ describe('Tests of adminQuizCreateQuestion', () => {
         };
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(ERROR);
   });
+
+  test('Test For Normal Case: Randomizing Colours, AnswerID generation, QuestionID', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    };
+    const newQuestion2 = {
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestion3 = {
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse1 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion1);
+    const createdQuestionResponse2 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion2);
+    const createdQuestionResponse3 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion3);
+    const questionId1 = createdQuestionResponse1.questionId;
+    const questionId2 = createdQuestionResponse2.questionId;
+    const questionId3 = createdQuestionResponse3.questionId;
+    const quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Storing questions quizinfo returns to check
+    const newQuestionOutput1 = {
+      questionId: questionId1,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestionOutput2 = {
+      questionId: questionId2,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    const newQuestionOutput3 = {
+      questionId: questionId3,
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ]
+    };
+    // Confirm if questions are in questions array
+    expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]);
+  });
 });
 
+// Tests for adminQuizUpdateQuestion
 describe('Tests of adminQuizUpdateQuestion', () => {
   beforeEach(() => {
     clearRequest();
@@ -713,15 +867,21 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
           answer: 'Prince Wales',
+          colour: expect.any(String),
           correct: true,
         },
         {
+          answerId: expect.any(Number),
           answer: 'Prince Charles',
+          colour: expect.any(String),
           correct: true,
         },
         {
+          answerId: expect.any(Number),
           answer: 'Prince Diana',
+          colour: expect.any(String),
           correct: true,
         },
       ]
@@ -812,14 +972,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -832,14 +998,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -852,14 +1024,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -878,14 +1056,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -898,14 +1082,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -984,14 +1174,20 @@ describe('Tests of adminQuizQuestionDelete', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true,
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true,
         },
@@ -1005,109 +1201,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
     expect(adminQuizQuestionDeleteRequest(newUser2.token, newQuiz.quizId, questionId)).toEqual(ERROR);
   });
 });
-/*
-const User1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
-const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
-const Question1 =
-    {
-      question: 'Sample Question 1',
-      duration: 5,
-      points: 4,
-      answers: [
-        {
-          answer: 'Prince Wales',
-          correct: true
-        },
-        {
-          answer: 'Prince Charles',
-          correct: true
-        },
-        {
-          answer: 'Prince Diana',
-          correct: true
-        }
-      ]
-};
-const Question2 =
-{
-  question: 'Sample Question 2',
-  duration: 5,
-  points: 4,
-  answers: [
-    {
-      answer: 'Prince Wales',
-      correct: true
-    },
-    {
-      answer: 'Prince Charles',
-      correct: true
-    },
-    {
-      answer: 'Prince Diana',
-      correct: true
-    }
-  ]
-};
 
-//console.log(getData().quizzes[0].questions);
-const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1)
-const newQuestion2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2)
-
-//console.log(getData().quizzes[0].questions);
-
-const QuizInfoQuestion1 =
-{
-  questionId: newQuestion1.questionId,
-  question: 'Sample Question 1',
-  duration: 5,
-  points: 4,
-  answers: [
-    {
-      answer: 'Prince Wales',
-      correct: true
-    },
-    {
-      answer: 'Prince Charles',
-      correct: true
-    },
-    {
-      answer: 'Prince Diana',
-      correct: true
-    }
-  ]
-};
-const QuizInfoQuestion2 =
-{
-  questionId: newQuestion2.questionId,
-  question: 'Sample Question 2',
-  duration: 5,
-  points: 4,
-  answers: [
-    {
-      answer: 'Prince Wales',
-      correct: true
-    },
-    {
-      answer: 'Prince Charles',
-      correct: true
-    },
-    {
-      answer: 'Prince Diana',
-      correct: true
-    }
-  ]
-};
-
-const newOutput = adminQuizInfoRequest(User1.token, Quiz1.quizId);
-console.log(newOutput.questions);
-//expect(adminQuizCreateQuestionRequestRequest(User1.token, Quiz1.quizid, Question2)).toEqual({})
-console.log(newQuestion1);
-console.log(newQuestion2);
-
-console.log(adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion2.questionId));
-const newOutput1 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
-console.log(newOutput1.questions);
-*/
 describe('Tests of adminQuizQuestionMove', () => {
   beforeEach(() => {
     clearRequest();
@@ -1379,14 +1473,20 @@ describe('Tests of adminQuizQuestionMove', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1399,14 +1499,20 @@ describe('Tests of adminQuizQuestionMove', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1424,14 +1530,20 @@ describe('Tests of adminQuizQuestionMove', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1444,14 +1556,20 @@ describe('Tests of adminQuizQuestionMove', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1459,6 +1577,7 @@ describe('Tests of adminQuizQuestionMove', () => {
     }]);
   });
 });
+
 describe('Tests of adminQuizQuestionDuplicate', () => {
   beforeEach(() => {
     clearRequest();
@@ -1570,6 +1689,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question1);
     expect(adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion.questionId + 1)).toEqual(ERROR);
   });
+
   test('Valid test', () => {
     const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
     const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
@@ -1626,14 +1746,20 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1646,14 +1772,20 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1671,14 +1803,20 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1691,14 +1829,20 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
       points: 4,
       answers: [
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Wales',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Charles',
           correct: true
         },
         {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
           answer: 'Prince Diana',
           correct: true
         }
@@ -1707,6 +1851,39 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
     {
       questionId: newOutput3.newQuestionId,
       question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ]
+    }]);
+  });
+});
+/// //////////////////////// Epilouge //////////////////////////////
+
+/*
+const User1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+const Question1 =
+    {
+      question: 'Sample Question 1',
       duration: 5,
       points: 4,
       answers: [
@@ -1723,7 +1900,84 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ]
-    }]);
-  });
-});
-/// //////////////////////// Epilouge //////////////////////////////
+};
+const Question2 =
+{
+  question: 'Sample Question 2',
+  duration: 5,
+  points: 4,
+  answers: [
+    {
+      answer: 'Prince Wales',
+      correct: true
+    },
+    {
+      answer: 'Prince Charles',
+      correct: true
+    },
+    {
+      answer: 'Prince Diana',
+      correct: true
+    }
+  ]
+};
+
+//console.log(getData().quizzes[0].questions);
+const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1)
+const newQuestion2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2)
+
+//console.log(getData().quizzes[0].questions);
+
+const QuizInfoQuestion1 =
+{
+  questionId: newQuestion1.questionId,
+  question: 'Sample Question 1',
+  duration: 5,
+  points: 4,
+  answers: [
+    {
+      answer: 'Prince Wales',
+      correct: true
+    },
+    {
+      answer: 'Prince Charles',
+      correct: true
+    },
+    {
+      answer: 'Prince Diana',
+      correct: true
+    }
+  ]
+};
+const QuizInfoQuestion2 =
+{
+  questionId: newQuestion2.questionId,
+  question: 'Sample Question 2',
+  duration: 5,
+  points: 4,
+  answers: [
+    {
+      answer: 'Prince Wales',
+      correct: true
+    },
+    {
+      answer: 'Prince Charles',
+      correct: true
+    },
+    {
+      answer: 'Prince Diana',
+      correct: true
+    }
+  ]
+};
+
+const newOutput = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+console.log(newOutput.questions);
+//expect(adminQuizCreateQuestionRequestRequest(User1.token, Quiz1.quizid, Question2)).toEqual({})
+console.log(newQuestion1);
+console.log(newQuestion2);
+
+console.log(adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion2.questionId));
+const newOutput1 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+console.log(newOutput1.questions);
+*/

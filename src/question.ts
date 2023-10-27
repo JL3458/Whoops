@@ -1,7 +1,12 @@
-import { getData, setData, answer } from './dataStore';
+import { getData, setData } from './dataStore';
 import { checkValidToken } from './quiz';
 
 /// ///////////////// Function Return Interfaces ///////////////////
+
+interface answer {
+  answer: string,
+  correct: boolean
+}
 
 export interface questionBody {
     question: string,
@@ -24,23 +29,24 @@ interface DuplicateQuestionReturn {
 
 /// //////////////////// Helper Functions //////////////////////////
 
+// Helper function to generate random colour names
+function generateRandomColorName() {
+  const colorNames = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'gray', 'cyan'];
+  const randomIndex = Math.floor(Math.random() * colorNames.length);
+  return colorNames[randomIndex];
+}
+
 /// //////////////////// Main Functions ///////////////////////////
 
 export function adminQuizCreateQuestion (token: string, quizId: number, question: questionBody): QuestionCreateReturn | ErrorReturn {
   const data = getData();
 
-  // If Token is an empty string
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is Empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   // Checks if quizId refers to an invalid quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -97,13 +103,24 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     return { error: 'There are no correct answers' };
   }
 
+  interface answerDescription extends answer {
+    answerId: string,
+    colour: string,
+  }
+
+  let answerIdGenerator = 1;
+  question.answers.forEach((answer) => {
+    answer.answerId = answerIdGenerator++;
+    answer.colour = generateRandomColorName();
+  });
+
   const questionIdGenerator = tempQuiz.questions.length + 1;
   const tempQuestion = {
     questionId: questionIdGenerator,
     question: question.question,
     duration: question.duration,
     points: question.points,
-    answers: question.answers
+    answers: question.answers as answerDescription[]
   };
   tempQuiz.questions.push(tempQuestion);
   tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
@@ -119,17 +136,12 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   const data = getData();
 
   // If Token is an empty string
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is Empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   // Checks if quizId refers to a valid quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -208,6 +220,7 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
     questionId: existingQuestion.questionId
   };
 }
+
 export function adminQuizQuestionMove(token: string, newPosition: number, quizId: number, questionId: number): object | ErrorReturn {
   const data = getData();
 
@@ -260,17 +273,12 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   const data = getData();
 
   // If Token is an empty string
-  if (token === '') {
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is Empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   // Finds the quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
