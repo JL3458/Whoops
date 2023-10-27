@@ -10,8 +10,10 @@ export interface user {
 }
 
 export interface answer {
+  answerId: number,
   answer: string,
-  correct: boolean
+  correct: boolean,
+  colour: string
 }
 
 export interface question {
