@@ -15,9 +15,9 @@ export function adminQuizCreateQuestionRequest(token: string, quizid: number, qu
   const request1 = request('POST', SERVER_URL + `/v1/admin/quiz/${quizid}/question`, { json: { token: token, questionBody: questionBody } });
   return JSON.parse(request1.body as string);
 }
-export function adminQuizUpdateQuestionRequest(token: string, quizid: number, questionId: number, updatedQuestion: questionBody) {
+export function adminQuizUpdateQuestionRequest(token: string, quizid: number, questionId: number, questionBody: questionBody) {
   const request1 = request('PUT', SERVER_URL + `/v1/admin/quiz/${quizid}/question/${questionId}`, {
-    json: { token: token, updatedQuestion: updatedQuestion },
+    json: { token: token, questionBody: questionBody },
   });
   return JSON.parse(request1.body as string);
 }
