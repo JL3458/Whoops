@@ -425,7 +425,9 @@ describe('Tests of adminQuizInfo', () => {
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'This is a test',
-      questions: []
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number)
     });
   });
 });
@@ -687,7 +689,9 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'This is a test',
-      questions: []
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -696,7 +700,9 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'Valid description',
-      questions: []
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid testing for description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -705,7 +711,9 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       timeCreated: expect.any(Number),
       timeLastEdited: expect.any(Number),
       description: 'Valid testing for description',
-      questions: []
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
     });
   });
 });
