@@ -26,6 +26,8 @@ interface QuizInfoReturn {
     timeLastEdited: number,
     description: string,
     questions: question[]
+    duration: number,
+    numQuestions: number,
 }
 
 interface QuizViewTrashReturn {
@@ -44,6 +46,16 @@ export function checkValidToken(token: string): boolean {
   // Checking if a token exists
   if (token === '') {
     return true;
+  }
+
+  try {
+    // Check the function that might throw a SyntaxError
+    JSON.parse(decodeURIComponent(token));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      // Handle the SyntaxError here
+      return true;
+    }
   }
 
   // convert token to an object
@@ -173,17 +185,11 @@ export function adminQuizRemove(token: string, quizId: number): object | ErrorRe
 export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | ErrorReturn {
   const data = getData();
 
-  if (token === '') {
+  if (checkValidToken(token)) {
     return { error: 'Token is empty or invalid' };
   }
-
-  // Converts token string to token object
+  // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
-
-  // Checks if Token is empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
 
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
@@ -197,6 +203,9 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     return { error: 'Valid token is provided, but user is not an owner of this quiz' };
   }
 
+  const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
+  const numQuestions = tempQuiz.questions.length;
+
   // Returns quiz info
   return {
     quizId: tempQuiz.quizId,
@@ -204,7 +213,9 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     timeCreated: tempQuiz.timeCreated,
     timeLastEdited: tempQuiz.timeLastEdited,
     description: tempQuiz.description,
-    questions: tempQuiz.questions
+    numQuestions: numQuestions,
+    questions: tempQuiz.questions,
+    duration: totalQuestionDuration,
   };
 }
 
@@ -303,11 +314,6 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
-  // Checks if Token is empty or invalid
-  if (!tempToken || data.tokens.find((currentToken) => currentToken.userId === tempToken.userId) === undefined) {
-    return { error: 'Token is empty or invalid' };
-  }
-
   // Checks if quizId refers to an invalid quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (tempQuiz === undefined) {
@@ -351,11 +357,6 @@ export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorR
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
-  // const userToken = data.tokens.find((currentToken) => currentToken.sessionId === tempToken.sessionId);
-  // if (CheckValidUserId(userToken.userId)) {
-  //   return { error: 'AuthUserId is not a valid user' };
-  // }
-  // Retrieves the names of the quizzes and respective quizIds from the trash
   const quizDetails = data.trash.filter((quiz) => quiz.userId === tempToken.userId);
 
   // returns the quiz information in the correct format
