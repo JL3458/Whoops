@@ -9,6 +9,29 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { clear } from './other';
+import {
+  adminAuthLogin,
+  adminAuthLogout,
+  adminAuthRegister,
+  adminUpdateUserDetails,
+  adminUserDetails,
+  adminUserPassword
+} from './auth';
+import {
+  adminQuizCreate,
+  adminQuizList,
+  adminQuizRemove,
+  adminQuizRestore,
+  adminQuizTransfer,
+  adminQuizTrashEmpty,
+  adminQuizViewTrash,
+  adminQuizInfo,
+  adminQuizNameUpdate,
+  adminQuizDescriptionUpdate
+} from './quiz';
+import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
+import { setData, getData } from './dataStore';
 
 // Set up web app
 const app = express();
@@ -36,6 +59,416 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(echo(data));
 });
 
+/// ///////////////////////// dataBase.json ///////////////////////////////
+
+if (fs.existsSync('./dataBase.json')) {
+  const database = fs.readFileSync('./dataBase.json');
+  setData(JSON.parse(String(database)));
+}
+
+const saveDataStore = () => {
+  const dataString = JSON.stringify(getData());
+  fs.writeFileSync('./dataBase.json', dataString);
+};
+
+/// ///////////////////////// auth.ts ///////////////////////////////
+
+// adminAuthRegister Request
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  // email, password, nameFirst, nameLast values obtained from body
+  const { email, password, nameFirst, nameLast } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthRegister(email, password, nameFirst, nameLast);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminAuthLogin Request
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  // email and password values obtained from body
+  const { email, password } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogin(email, password);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(400).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminUserDetails Request
+app.get('/v1/admin/user/details', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUserDetails(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminAuthLogout Request
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  // token value obtained from body
+  const { token } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminAuthLogout(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminUpdateUserDetails Request
+app.put('/v1/admin/user/details', (req: Request, res: Response) => {
+  // token, email, nameFirst, nameLast values obtained from body
+  const { token, email, nameFirst, nameLast } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUpdateUserDetails(token, email, nameFirst, nameLast);
+
+  // handles an error
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminUserPassword Request
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  // token, oldPassword, newPassword values obtained from body
+  const { token, oldPassword, newPassword } = req.body;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminUserPassword(token, oldPassword, newPassword);
+
+  // handles an error
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+/// ///////////////////////// other.ts ///////////////////////////////
+
+// Clear Request
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const response = clear();
+  saveDataStore();
+  res.json(response);
+});
+
+/// ///////////////////////// quiz.ts ///////////////////////////////
+
+// adminQuizList Request
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizList(token);
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizCreate Request
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const { token, name, description } = req.body;
+
+  const response = adminQuizCreate(token, name, description);
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizRemove Request
+app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.query.token as string;
+  const response = adminQuizRemove(token, quizId);
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(403).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizTransfer Request
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, userEmail } = req.body;
+  const response = adminQuizTransfer(token, quizId, userEmail);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizNameUpdate Request
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, name } = req.body;
+  const response = adminQuizNameUpdate(token, quizId, name);
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizDescriptionUpdate
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const { token, description } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const response = adminQuizDescriptionUpdate(token, quizId, description);
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizViewTrash Request
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  // data is passed into a query string
+  const token = req.query.token as string;
+
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizViewTrash(token);
+
+  // handles an error
+  if ('error' in response) {
+    return res.status(401).json(response);
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizRestore Request
+app.post('/v1/admin/quiz/:quizid/restore', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token } = req.body;
+  const response = adminQuizRestore(token, quizId);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizTrashEmpty Request
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  // passes the token as a query string
+  const token = req.query.token as string;
+  // passes the quizIds as a query string
+  const quizIds = req.query.quizIds as string;
+  // logic of the function is retrieved from auth.ts
+  const response = adminQuizTrashEmpty(token, quizIds);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizInfo Request
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.query.token as string;
+  const response = adminQuizInfo(token, quizId);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(403).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+/// ////////////////////////// question.ts ///////////////////////////////
+
+// adminQuizQuestionUpdate
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const { token, questionBody } = req.body;
+
+  const response = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizCreateQuestion Request
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const { token, questionBody } = req.body;
+
+  const response = adminQuizCreateQuestion(token, quizId, questionBody);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizQuestionMove
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { token, newPosition } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const response = adminQuizQuestionMove(token, newPosition, quizId, questionId);
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizQuestionDelete
+app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+  const token = req.query.token as string;
+
+  const response = adminQuizQuestionDelete(token, quizId, questionId);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizQuestionDuplicate
+app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizid);
+  const questionId = parseInt(req.params.questionid);
+
+  const response = adminQuizQuestionDuplicate(token, quizId, questionId);
+
+  if (response.error) {
+    if (response.error === 'Token is empty or invalid') {
+      return res.status(401).json(response);
+    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
+      return res.status(403).json(response);
+    } else if ('error' in response) {
+      return res.status(400).json(response);
+    }
+  }
+  saveDataStore();
+  res.json(response);
+});
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
