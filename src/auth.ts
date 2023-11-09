@@ -62,7 +62,7 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
     nameLast: nameLast,
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
-    oldPasswords: [password]
+    oldPasswords: [hashPassword(password)]
   });
   const newToken = startSession(Id);
   const encodeToken = encodeURIComponent(JSON.stringify(newToken));
