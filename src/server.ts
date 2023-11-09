@@ -98,24 +98,20 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 });
 
 // adminUserDetails Request
-app.get('/v1/admin/user/details', (req: Request, res: Response) => {
-  // data is passed into a query string
-  const token = req.query.token as string;
+app.get('/v2/admin/user/details', (req: Request, res: Response) => {
+  // token value obtained fromm header
+  const token = req.headers.token as string;
 
   // logic of the function is retrieved from auth.ts
   const response = adminUserDetails(token);
 
-  // handles an error
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
   saveDataStore();
   res.json(response);
 });
 
 // adminAuthLogout Request
 app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
-  // token value obtained from body
+  // token value obtained from header
   const token = req.headers.token as string;
 
   // logic of the function is retrieved from auth.ts
