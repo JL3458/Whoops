@@ -190,17 +190,12 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 });
 
 // adminQuizCreate Request
-app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  const { token, name, description } = req.body;
+app.post('/v2/admin/quiz', (req: Request, res: Response) => {
+  const token = req.headers.token as string;
+  const { name, description } = req.body;
 
   const response = adminQuizCreate(token, name, description);
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
+
   saveDataStore();
   res.json(response);
 });
