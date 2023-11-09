@@ -126,7 +126,7 @@ export function adminAuthLogout(token: string): ErrorReturn | object {
 
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   // convert token to an object
