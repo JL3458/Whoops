@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
-// import { clear } from './other';
+import { clear } from './other';
 const SERVER_URL = `${url}:${port}`;
 
 export function clearRequest() {
@@ -8,6 +8,14 @@ export function clearRequest() {
   return JSON.parse(res.body as string);
 }
 
-test('Nice Test', () => {
-  expect(1 + 1).toEqual(2);
+describe('Testing for clear', () => {
+  test('clear() returns empty dataStore', () => {
+    expect(clear()).toStrictEqual({});
+  });
+});
+
+describe('Testing for clearRequest', () => {
+  test('clearRequest() returns empty', () => {
+    expect(clearRequest()).toStrictEqual({});
+  });
 });

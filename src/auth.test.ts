@@ -1,4 +1,4 @@
-// New .ts file to implement tests for auth.ts functions through the server
+// New .ts file to implement tests for auth.ts functions through the server (Iteration 3)
 
 import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from './config.json';
@@ -8,13 +8,12 @@ import { IncomingHttpHeaders } from 'http';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 10000;
-const ERROR = { error: expect.any(String) };
 
 interface Payload {
   [key: string]: any;
 }
 
-// Helpers
+/// ///////////////////////////// Request Helper function////////////////////////////
 const requestHelper = (
   method: HttpVerb,
   path: string,
@@ -66,7 +65,7 @@ const requestHelper = (
   return responseBody;
 };
 
-/// ////////////////////// Request Functions ////////////////////////////
+/// //////////////////////////// Request Functions ////////////////////////////
 
 export function authRegisterRequest(email: string, password: string, nameFirst: string, nameLast: string) {
   return requestHelper('POST', '/v1/admin/auth/register', { email, password, nameFirst, nameLast }, {});
@@ -81,19 +80,10 @@ export function authLogoutRequest(token: string) {
 }
 
 export function userDetailsRequest(token: string) {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/user/details',
-    {
-      qs: {
-        token
-      }
-    }
-  );
-  return JSON.parse(res.body.toString());
+  return requestHelper('GET', '/v2/admin/user/details', {}, { token });
 }
 
-/// ///////////////////////////// Tests /////////////////////////////////
+/// /////////////////////////////// Tests /////////////////////////////////
 
 beforeEach(() => {
   clearRequest();
@@ -185,6 +175,57 @@ describe('Tests for adminAuthlogin', () => {
   });
 });
 
+describe('Tests for adminUserDetails', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Invalid token', () => {
+    expect(() => userDetailsRequest('asca')).toThrow(HTTPError[401]);
+    expect(() => userDetailsRequest('234987')).toThrow(HTTPError[401]);
+  });
+
+  test('Valid Tests', () => {
+    const authId1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(authId1.token)).toEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Pedro Gonzalez',
+        email: 'ValidEmail1@gmail.com',
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0
+      }
+    });
+    const authId2 = authRegisterRequest('ValidEmail2@gmail.com', 'password123', 'Gavi', 'Gonzalez');
+    expect(authLoginRequest('ValidEmail2@gmail.com', 'password123')).toEqual({ token: expect.any(String) });
+    expect(() => authLoginRequest('ValidEmail2@gmail.com', 'password789')).toThrow(HTTPError[400]);
+    expect(userDetailsRequest(authId2.token)).toEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Gavi Gonzalez',
+        email: 'ValidEmail2@gmail.com',
+        numSuccessfulLogins: 2,
+        numFailedPasswordsSinceLastLogin: 1
+      }
+    });
+  });
+
+  test('Sample Test userDetails with clear()', () => {
+    const authId1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(authId1.token)).toEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Pedro Gonzalez',
+        email: 'ValidEmail1@gmail.com',
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0
+      }
+    });
+    expect(clearRequest()).toEqual({});
+    expect(() => userDetailsRequest(authId1.token)).toThrow(HTTPError[401]);
+  });
+});
+
 describe('Tests for adminAuthlogout', () => {
   beforeEach(() => {
     clearRequest();
@@ -209,7 +250,7 @@ describe('Tests for adminAuthlogout', () => {
     expect(authLogoutRequest(token1.token)).toEqual({});
 
     // Returns error since user has been logged out
-    expect(userDetailsRequest(token1.token)).toEqual(ERROR);
+    expect(() => userDetailsRequest(token1.token)).toThrow(HTTPError[401]);
   });
 
   test('Valid tests with clear', () => {
