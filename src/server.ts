@@ -173,7 +173,7 @@ app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
 
   // logic of the function is retrieved from quiz.ts
   const response = adminQuizList(token);
-  
+
   saveDataStore();
   res.json(response);
 });

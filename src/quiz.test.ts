@@ -81,7 +81,7 @@ export function adminQuizCreateRequest(token: string, name: string, description:
 }
 
 export function adminQuizListRequest(token: string) {
-  return requestHelper('GET', '/v2/admin/quiz/list', {}, {token});
+  return requestHelper('GET', '/v2/admin/quiz/list', {}, { token });
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -182,8 +182,8 @@ describe('Tests of adminQuizList', () => {
   });
 
   test('Empty or Invalid token', () => {
-    expect(() => adminQuizListRequest('not a token')).toThrow(HTTPError[401])
-    expect(() => adminQuizListRequest('')).toThrow(HTTPError[401])
+    expect(() => adminQuizListRequest('not a token')).toThrow(HTTPError[401]);
+    expect(() => adminQuizListRequest('')).toThrow(HTTPError[401]);
   });
 
   test('Valid Test quizList with 1 quiz', () => {
