@@ -1982,7 +1982,6 @@ const newOutput1 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
 console.log(newOutput1.questions);
 */
 
-
 test('Nice Test', () => {
   expect(1 + 1).toEqual(2);
 });

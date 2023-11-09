@@ -7,8 +7,6 @@
 // const SERVER_URL = `${url}:${port}`;
 // const ERROR = { error: expect.any(String) };
 
-
 test('Nice Test', () => {
-    expect(1 + 1).toEqual(2);
-  });
-  
+  expect(1 + 1).toEqual(2);
+});

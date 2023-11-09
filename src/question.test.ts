@@ -10,5 +10,5 @@
 // const QUESTIONID = { questionId: expect.any(Number) };
 
 test('Nice Test', () => {
-    expect(1 + 1).toEqual(2);
+  expect(1 + 1).toEqual(2);
 });
