@@ -192,7 +192,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
   const data = getData();
 
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -201,12 +201,12 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
 
   // Checks if quizId refers to an invalid quiz
   if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
+    throw HTTPError(403, 'Quiz does not exist');
   }
 
   // Checks if the quiz belongs to the current logged in user
   if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'User does not own this quiz');
   }
 
   const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
