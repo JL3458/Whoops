@@ -80,6 +80,10 @@ export function adminQuizCreateRequest(token: string, name: string, description:
   return requestHelper('POST', '/v2/admin/quiz', { name, description }, { token });
 }
 
+export function adminQuizInfoRequest(token: string, quizid: number) {
+  return requestHelper('GET', `/v2/admin/quiz/${quizid}`, {}, { token });
+}
+
 /// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreate', () => {
@@ -172,6 +176,43 @@ describe('Tests of adminQuizCreate', () => {
   });
 });
 
-test('Nice Test', () => {
-  expect(1 + 1).toEqual(2);
+describe('Tests of adminQuizInfo', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizInfoRequest('', quizIndex.quizId)).toThrow(HTTPError[401]);
+  });
+
+  test('QuizId is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    expect(() => adminQuizInfoRequest(newUser.token, quizIndex.quizId + 1)).toThrow(HTTPError[403]);
+  });
+
+  test('Quiz is not owned by the owner', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jane', 'Choi');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizInfoRequest(newUser2.token, quizIndex.quizId)).toThrow(HTTPError[403]);
+  });
+
+  test('Quiz Info Successful', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizInfoRequest(newUser.token, quizIndex.quizId)).toEqual({
+      quizId: quizIndex.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'This is a test',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number)
+    });
+  });
 });
