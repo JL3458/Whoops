@@ -81,10 +81,6 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   // logic of the function is retrieved from auth.ts
   const response = adminAuthRegister(email, password, nameFirst, nameLast);
 
-  // handles an error
-  if ('error' in response) {
-    return res.status(400).json(response);
-  }
   saveDataStore();
   res.json(response);
 });
@@ -97,10 +93,6 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   // logic of the function is retrieved from auth.ts
   const response = adminAuthLogin(email, password);
 
-  // handles an error
-  if ('error' in response) {
-    return res.status(400).json(response);
-  }
   saveDataStore();
   res.json(response);
 });
@@ -122,17 +114,13 @@ app.get('/v1/admin/user/details', (req: Request, res: Response) => {
 });
 
 // adminAuthLogout Request
-app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
   // token value obtained from body
-  const { token } = req.body;
+  const token = req.headers.token as string;
 
   // logic of the function is retrieved from auth.ts
   const response = adminAuthLogout(token);
 
-  // handles an error
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
   saveDataStore();
   res.json(response);
 });
@@ -469,6 +457,7 @@ app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
   saveDataStore();
   res.json(response);
 });
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
