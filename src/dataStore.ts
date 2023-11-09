@@ -21,7 +21,8 @@ export interface question {
   question: string,
   duration: number,
   points: number,
-  answers: answer[]
+  answers: answer[],
+  thumbnailUrl: string
 }
 
 export interface quiz {

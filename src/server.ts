@@ -335,21 +335,12 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
 });
 
 // adminQuizCreateQuestion Request
-app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const { token, questionBody } = req.body;
-
+  const { questionBody } = req.body;
+  const token = req.headers.token as string;
   const response = adminQuizCreateQuestion(token, quizId, questionBody);
 
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
-      return res.status(403).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
   saveDataStore();
   res.json(response);
 });
