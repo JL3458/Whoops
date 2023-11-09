@@ -488,7 +488,7 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ error });
 });
 
-// For handling errors
+// Error middleware - must use AFTER declaring your routes and other middlewares
 app.use(errorHandler());
 
 // start server
