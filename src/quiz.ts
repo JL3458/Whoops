@@ -158,21 +158,23 @@ export function adminQuizRemove(token: string, quizId: number): object | ErrorRe
   const data = getData();
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
+  // TODO: Add a Error Checking for All sessions for this quiz must be in END state (HTTP ERROR 404)
+
   // Checks if quizId refers to an invalid quiz
   if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
+    throw HTTPError(400, 'quizId is not of a valid quiz');
   }
 
   // Checks if the quiz belongs to the current logged in user
   if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
   }
 
   // Push Quiz in Trash in DataStore
