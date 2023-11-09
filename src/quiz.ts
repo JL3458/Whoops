@@ -78,7 +78,7 @@ export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   const data = getData();
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session');
   }
 
   // converts the token string into the token object

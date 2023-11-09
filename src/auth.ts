@@ -152,7 +152,7 @@ export function adminUpdateUserDetails(token: string, email: string, nameFirst: 
 
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   // convert token to an object
@@ -163,20 +163,20 @@ export function adminUpdateUserDetails(token: string, email: string, nameFirst: 
 
   // Checking if email is valid
   if (validator.isEmail(email) === false) {
-    return { error: 'Invalid Entry' };
+    throw HTTPError(400, 'Invalid Email Entered');
   }
   // Checking if email is in use by another user that is not the current authorised user
   for (const user of data.users) {
     if (user.email === email && userToUpdate.email !== email) {
-      return { error: 'Email Already in Use' };
+      throw HTTPError(400, 'Entered Email is Already in Use');
     }
   }
   // Checking if first and last name meet the required conditions
   if (nameFirst.length < 2 || nameFirst.length > 20 || PATTERN.test(nameFirst) === false) {
-    return { error: 'Invalid First Name' };
+    throw HTTPError(400, 'Invalid First Name');
   }
   if (nameLast.length < 2 || nameLast.length > 20 || PATTERN.test(nameLast) === false) {
-    return { error: 'Invalid Last Name' };
+    throw HTTPError(400, 'Invalid Last Name');
   }
 
   Object.assign(userToUpdate, { email: email, nameFirst: nameFirst, nameLast: nameLast });

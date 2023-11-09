@@ -122,21 +122,15 @@ app.post('/v2/admin/auth/logout', (req: Request, res: Response) => {
 });
 
 // adminUpdateUserDetails Request
-app.put('/v1/admin/user/details', (req: Request, res: Response) => {
-  // token, email, nameFirst, nameLast values obtained from body
-  const { token, email, nameFirst, nameLast } = req.body;
+app.put('/v2/admin/user/details', (req: Request, res: Response) => {
+  // token value obtained from header
+  const token = req.headers.token as string;
+  // email, nameFirst, nameLast values obtained from body
+  const { email, nameFirst, nameLast } = req.body;
 
   // logic of the function is retrieved from auth.ts
   const response = adminUpdateUserDetails(token, email, nameFirst, nameLast);
 
-  // handles an error
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
   saveDataStore();
   res.json(response);
 });
@@ -173,14 +167,13 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 /// ///////////////////////// quiz.ts ///////////////////////////////
 
 // adminQuizList Request
-app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
   // data is passed into a query string
-  const token = req.query.token as string;
-  // logic of the function is retrieved from auth.ts
+  const token = req.headers.token as string;
+
+  // logic of the function is retrieved from quiz.ts
   const response = adminQuizList(token);
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
+
   saveDataStore();
   res.json(response);
 });
