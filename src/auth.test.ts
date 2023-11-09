@@ -87,6 +87,10 @@ export function updateUserDetailsRequest(token: string, email: string, nameFirst
   return requestHelper('PUT', '/v2/admin/user/details', { email, nameFirst, nameLast }, { token });
 }
 
+export function updateUserPasswordRequest(token: string, oldPassword: string, newPassword: string) {
+  return requestHelper('PUT', '/v2/admin/user/password', { oldPassword, newPassword }, { token });
+}
+
 /// /////////////////////////////// Tests /////////////////////////////////
 
 beforeEach(() => {
@@ -338,5 +342,61 @@ describe('Tests for adminUpdateUserDetails', () => {
 
     // returns an error since token becomes invalid
     expect(() => updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toThrow(HTTPError[401]);
+  });
+});
+
+describe('Tests for adminUserPassword', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty or invalid', () => {
+    authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserPasswordRequest('', 'password123', 'pass1234')).toThrow(HTTPError[401]);
+  });
+
+  test('Old password is incorrect', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserPasswordRequest(token1.token, 'pass1234', 'updated123')).toThrow(HTTPError[400]);
+  });
+
+  test('Old Password and New Password match exactly', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserPasswordRequest(token1.token, 'password123', 'password123')).toThrow(HTTPError[400]);
+  });
+
+  test('New Password has already been used before by this user', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(updateUserPasswordRequest(token1.token, 'password123', 'pass1234')).toEqual({});
+    expect(() => updateUserPasswordRequest(token1.token, 'pass1234', 'password123')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid New password', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserPasswordRequest(token1.token, 'password123', 'pass123')).toThrow(HTTPError[400]);
+    expect(() => updateUserPasswordRequest(token1.token, 'password123', 'password')).toThrow(HTTPError[400]);
+    expect(() => updateUserPasswordRequest(token1.token, 'password123', '12345678')).toThrow(HTTPError[400]);
+  });
+
+  test('Valid Tests', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(authLoginRequest('ValidEmail1@gmail.com', 'password123')).toEqual({ token: expect.any(String) });
+    expect(updateUserPasswordRequest(token1.token, 'password123', 'pass1234')).toEqual({});
+
+    // returns error since password is now incorrect
+    expect(() => authLoginRequest('ValidEmail1@gmail.com', 'password123')).toThrow(HTTPError[400]);
+    expect(authLoginRequest('ValidEmail1@gmail.com', 'pass1234')).toEqual({ token: expect.any(String) });
+  });
+
+  test('Testing with Clear', () => {
+    let token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(authLoginRequest('ValidEmail1@gmail.com', 'password123')).toEqual({ token: expect.any(String) });
+    expect(updateUserPasswordRequest(token1.token, 'password123', 'pass1234')).toEqual({});
+
+    expect(clearRequest()).toEqual({});
+    // returns error since user does not exist
+    expect(() => authLoginRequest('ValidEmail1@gmail.com', 'password123')).toThrow(HTTPError[400]);
+    token1 = authRegisterRequest('ValidEmail1@gmail.com', 'pass1234', 'Pedro', 'Gonzalez');
+    expect(authLoginRequest('ValidEmail1@gmail.com', 'pass1234')).toEqual({ token: expect.any(String) });
   });
 });
