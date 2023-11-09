@@ -136,21 +136,15 @@ app.put('/v2/admin/user/details', (req: Request, res: Response) => {
 });
 
 // adminUserPassword Request
-app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  // token, oldPassword, newPassword values obtained from body
-  const { token, oldPassword, newPassword } = req.body;
+app.put('/v2/admin/user/password', (req: Request, res: Response) => {
+  // token value obtained from header
+  const token = req.headers.token as string;
+  // oldPassword, newPassword values obtained from body
+  const { oldPassword, newPassword } = req.body;
 
   // logic of the function is retrieved from auth.ts
   const response = adminUserPassword(token, oldPassword, newPassword);
 
-  // handles an error
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
   saveDataStore();
   res.json(response);
 });
