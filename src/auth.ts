@@ -190,7 +190,7 @@ export function adminUserPassword(token: string, oldPassword: string, newPasswor
 
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   // convert token to an object
@@ -199,28 +199,32 @@ export function adminUserPassword(token: string, oldPassword: string, newPasswor
   // finds the user that is corresponding to the token and updates its details
   const userToUpdate = data.users.find((user) => user.userId === tempToken.userId);
 
+  // Hash the password entries
+  const oldPasswordHashed = hashPassword(oldPassword);
+  const newPasswordHashed = hashPassword(newPassword);
+
   // Check if Old Password is not the correct old password
-  if (userToUpdate.password !== oldPassword) {
-    return { error: 'Old Password is not the correct old password' };
+  if (userToUpdate.password !== oldPasswordHashed) {
+    throw HTTPError(400, 'Old Password is not the correct old password');
   }
 
   // Check if Old Password and New Password match exactly
   if (oldPassword === newPassword) {
-    return { error: 'Old Password and New Password match exactly' };
+    throw HTTPError(400, 'Old Password and New Password match exactly');
   }
 
   // Check if New Password has already been used before by this user
-  if (userToUpdate.oldPasswords.find(currentOldPassword => currentOldPassword === newPassword) !== undefined) {
-    return { error: 'New Password has already been used before by this user' };
+  if (userToUpdate.oldPasswords.find(currentOldPassword => currentOldPassword === newPasswordHashed) !== undefined) {
+    throw HTTPError(400, 'New Password has already been used before by this user');
   }
 
   // Checking if new password meets the required conditions
   if (newPassword.length < 8 || LETTERS.test(newPassword) === false || NUMS.test(newPassword) === false) {
-    return { error: 'Invalid  New Password' };
+    throw HTTPError(400, 'Invalid  New Password');
   }
 
-  userToUpdate.password = newPassword;
-  userToUpdate.oldPasswords.push(newPassword);
+  userToUpdate.password = newPasswordHashed;
+  userToUpdate.oldPasswords.push(newPasswordHashed);
 
   return {};
 }
@@ -248,7 +252,6 @@ function checkValidToken(token: string): boolean {
     JSON.parse(decodeURIComponent(token));
   } catch (error) {
     if (error instanceof SyntaxError) {
-      // Handle the SyntaxError here
       return true;
     }
   }
