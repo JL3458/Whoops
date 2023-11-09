@@ -191,12 +191,11 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 
 // adminQuizCreate Request
 app.post('/v2/admin/quiz', (req: Request, res: Response) => {
-  
   const token = req.headers.token as string;
   const { name, description } = req.body;
 
   const response = adminQuizCreate(token, name, description);
-  
+
   saveDataStore();
   res.json(response);
 });

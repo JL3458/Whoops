@@ -3,9 +3,12 @@
 import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from './config.json';
 
-// ADD THESE LATER PLEASE
 import { clearRequest } from './other.test';
-import { authRegisterRequest, authLoginRequest, authLogoutRequest } from './auth.test';
+
+// ADD THESE LATER PLEASE
+// import { authLoginRequest, authLogoutRequest } from './auth.test';
+
+import { authRegisterRequest } from './auth.test';
 
 import { IncomingHttpHeaders } from 'http';
 import HTTPError from 'http-errors';
@@ -17,8 +20,7 @@ interface Payload {
   [key: string]: any;
 }
 
-///////////////////////////////// Request Helper Function Wrapper ////////////////////////////////
-
+/// ////////////////////////////// Request Helper Function Wrapper ////////////////////////////////
 
 // Helpers
 const requestHelper = (
@@ -72,15 +74,13 @@ const requestHelper = (
   return responseBody;
 };
 
-////////////////////////// Server Functions ///////////////////////////
-
+/// /////////////////////// Server Functions ///////////////////////////
 
 export function adminQuizCreateRequest(token: string, name: string, description: string) {
-  return requestHelper('POST', '/v2/admin/quiz', { name, description }, { token })
+  return requestHelper('POST', '/v2/admin/quiz', { name, description }, { token });
 }
 
-
-///////////////////////////// Main Tests /////////////////////////////
+/// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreate', () => {
   beforeEach(() => {
@@ -147,16 +147,16 @@ describe('Tests of adminQuizCreate', () => {
 
   test('Making Multiple Quizzes with one user', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
-    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number)});
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
-  
+
     // We get an expected error as the quizzes are already created
     expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'Made by Divakar')).toThrow(HTTPError[400]);
     expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'Made by Divakar')).toThrow(HTTPError[400]);
     expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'Made by Divakar')).toThrow(HTTPError[400]);
   });
-  
+
   test('Making Multiple Quizzes with Multiple Users', () => {
     const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascheranous');
@@ -164,14 +164,13 @@ describe('Tests of adminQuizCreate', () => {
     expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toEqual({ quizId: expect.any(Number) });
     expect(adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath')).toEqual({ quizId: expect.any(Number) });
-  
+
     // We get an expected error as the quizzes are already created
     expect(() => adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toThrow(HTTPError[400]);
     expect(() => adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toThrow(HTTPError[400]);
     expect(() => adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath')).toThrow(HTTPError[400]);
   });
 });
-
 
 test('Nice Test', () => {
   expect(1 + 1).toEqual(2);
