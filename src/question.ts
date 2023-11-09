@@ -148,8 +148,10 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     question: question.question,
     duration: question.duration,
     points: question.points,
-    answers: question.answers as answerDescription[]
+    answers: question.answers as answerDescription[],
+    thumbnailUrl: question.thumbnailUrl
   };
+
   tempQuiz.questions.push(tempQuestion);
   tempQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
