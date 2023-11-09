@@ -173,14 +173,13 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 /// ///////////////////////// quiz.ts ///////////////////////////////
 
 // adminQuizList Request
-app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+app.get('/v2/admin/quiz/list', (req: Request, res: Response) => {
   // data is passed into a query string
-  const token = req.query.token as string;
-  // logic of the function is retrieved from auth.ts
+  const token = req.headers.token as string;
+
+  // logic of the function is retrieved from quiz.ts
   const response = adminQuizList(token);
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
+  
   saveDataStore();
   res.json(response);
 });
