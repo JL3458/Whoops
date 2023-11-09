@@ -83,6 +83,10 @@ export function userDetailsRequest(token: string) {
   return requestHelper('GET', '/v2/admin/user/details', {}, { token });
 }
 
+export function updateUserDetailsRequest(token: string, email: string, nameFirst: string, nameLast: string) {
+  return requestHelper('PUT', '/v2/admin/user/details', { email, nameFirst, nameLast }, { token });
+}
+
 /// /////////////////////////////// Tests /////////////////////////////////
 
 beforeEach(() => {
@@ -262,5 +266,77 @@ describe('Tests for adminAuthlogout', () => {
 
     // Now, unable to logout as the respective users have been cleared
     expect(() => authLogoutRequest(token2.token)).toThrow(HTTPError[401]);
+  });
+});
+
+describe('Tests for adminUpdateUserDetails', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty or invalid', () => {
+    authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserDetailsRequest('', 'updated@gmail.com', 'Updated', 'Updated')).toThrow(HTTPError[401]);
+  });
+
+  test('Invalid Email', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmailmail.com', 'Pedro', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, '@mail.com', 'Pedro', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@', 'Pedro', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@mail', 'Pedro', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail.com', 'Pedro', 'Gonzalez')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid first name', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'Pedro123', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'P', 'Gonzalez')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'Pedrooooooooooooooooo', 'Gonzalez')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid last name', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'Pedro', 'Gonzalez123')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'Pedro', 'G')).toThrow(HTTPError[400]);
+    expect(() => updateUserDetailsRequest(token1.token, 'InvalidEmail@gmail.com', 'Pedro', 'Gonzalezzzzzzzzzzzzzz')).toThrow(HTTPError[400]);
+  });
+
+  test('Valid Tests with same email error', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(userDetailsRequest(token1.token)).toEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Pedro Gonzalez',
+        email: 'ValidEmail1@gmail.com',
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0
+      }
+    });
+
+    // Does not return error since email is of the current authorized user
+    expect(updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toEqual({});
+    expect(userDetailsRequest(token1.token)).toEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Updated Name',
+        email: 'ValidEmail1@gmail.com',
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0
+      }
+    });
+    expect(authRegisterRequest('ValidEmail2@gmail.com', 'password123', 'Gavi', 'Gonzal')).toEqual({ token: expect.any(String) });
+
+    // Will return error since email is in use by another user
+    expect(() => updateUserDetailsRequest(token1.token, 'ValidEmail2@gmail.com', 'Updated', 'Name')).toThrow(HTTPError[400]);
+  });
+
+  test('Testing with Clear', () => {
+    const token1 = authRegisterRequest('ValidEmail1@gmail.com', 'password123', 'Pedro', 'Gonzalez');
+    expect(() => updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).not.toThrow(HTTPError[401]);
+    expect(clearRequest()).toEqual({});
+
+    // returns an error since token becomes invalid
+    expect(() => updateUserDetailsRequest(token1.token, 'ValidEmail1@gmail.com', 'Updated', 'Name')).toThrow(HTTPError[401]);
   });
 });
