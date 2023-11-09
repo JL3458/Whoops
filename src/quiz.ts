@@ -1,4 +1,5 @@
 import { getData, setData, question } from './dataStore';
+import HTTPError from 'http-errors';
 
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
@@ -101,7 +102,7 @@ export function adminQuizCreate(token: string, name: string, description: string
 
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -109,23 +110,23 @@ export function adminQuizCreate(token: string, name: string, description: string
   // Checks if entered quiz name is invalid
   const validCharacter = /^[a-zA-Z0-9\s]*$/;
   if (validCharacter.test(name) === false) {
-    return { error: 'Name contains characters other than alphanumeric and spaces' };
+    throw HTTPError(400, 'Name contains characters other than alphanumeric and space');
   }
 
   // Checks whether name meets the length requirements
   if (name.length < 3 || name.length > 30) {
-    return { error: 'Name should be between 3 and 30 characters' };
+    throw HTTPError(400, 'Name should be between 3 and 30 characters');
   }
 
   // Checks whether name is already used by the current logged in user for another quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.name === name);
   if (tempQuiz !== undefined && tempQuiz.userId === tempToken.userId) {
-    return { error: 'Quiz name same to the previous quiz made by the user' };
+    throw HTTPError(400, 'Quiz name same to the previous quiz made by the user');
   }
 
   // Checks whether description meets length requirements(< 100 characters)
   if (description.length > 100) {
-    return { error: 'Description is more than 100 characters in length' };
+    throw HTTPError(400, 'Description is more than 100 characters in length');
   }
 
   // Defines the new quiz which is to be added in format required.
