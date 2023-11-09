@@ -249,17 +249,13 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
 });
 
 // adminQuizViewTrash Request
-app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
   // data is passed into a query string
-  const token = req.query.token as string;
+  const token = req.headers.token as string;
 
   // logic of the function is retrieved from auth.ts
   const response = adminQuizViewTrash(token);
 
-  // handles an error
-  if ('error' in response) {
-    return res.status(401).json(response);
-  }
   saveDataStore();
   res.json(response);
 });
