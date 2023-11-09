@@ -54,7 +54,16 @@ export function adminAuthRegister(email: string, password: string, nameFirst: st
   }
 
   const Id = data.users.length + 1;
-  data.users.push({ userId: Id, email: email, password: hashPassword(password), nameFirst: nameFirst, nameLast: nameLast, numSuccessfulLogins: 1, numFailedPasswordsSinceLastLogin: 0, oldPasswords: [password] });
+  data.users.push({
+    userId: Id,
+    email: email,
+    password: hashPassword(password),
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    numSuccessfulLogins: 1,
+    numFailedPasswordsSinceLastLogin: 0,
+    oldPasswords: [password]
+  });
   const newToken = startSession(Id);
   const encodeToken = encodeURIComponent(JSON.stringify(newToken));
   setData(data);
@@ -98,7 +107,7 @@ export function adminUserDetails(token: string): ErrorReturn | UserDetailsReturn
 
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   // convert token to an object
@@ -260,14 +269,15 @@ function checkValidToken(token: string): boolean {
 function startSession(authUserId: number): token {
   const data = getData();
 
-  // If a session does not exist for current user, create a new session
   const findToken = data.tokens.find((currentToken) => currentToken.userId === authUserId);
   if (findToken === undefined) {
+    // If a session does not exist for current user, create a new session
     const newToken = { userId: authUserId, sessionId: randomUUID() };
     data.tokens.push(newToken);
     setData(data);
     return newToken;
   } else {
+    // If a session exists, update the sessionId
     data.tokens = data.tokens.filter(currentToken => !isEqual(currentToken, findToken));
     const newToken = { userId: authUserId, sessionId: randomUUID() };
     data.tokens.push(newToken);
