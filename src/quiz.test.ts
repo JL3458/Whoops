@@ -80,6 +80,10 @@ export function adminQuizCreateRequest(token: string, name: string, description:
   return requestHelper('POST', '/v2/admin/quiz', { name, description }, { token });
 }
 
+export function adminQuizRemoveRequest(token: string, quizid: number) {
+  return requestHelper('DELETE', `/v2/admin/quiz/${quizid}`, {}, { token });
+}
+
 export function adminQuizInfoRequest(token: string, quizid: number) {
   return requestHelper('GET', `/v2/admin/quiz/${quizid}`, {}, { token });
 }
@@ -220,6 +224,98 @@ describe('Tests of adminQuizInfo', () => {
     });
   });
 });
+
+describe('Tests of adminQuizRemove', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizRemoveRequest('', quizIndex.quizId)).toThrow(HTTPError[401]);
+  });
+
+  test('QuizId is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizRemoveRequest(newUser.token, quizIndex.quizId + 1)).toThrow(HTTPError[400]);
+  });
+
+  test('Removal when there are no quizzes', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    expect(() => adminQuizRemoveRequest(newUser.token, 100)).toThrow(HTTPError[400]);
+  });
+
+  test('Valid Token Provided but user is not owner of the quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemail12@gmail.com', 'password123', 'Shubham', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizRemoveRequest(newUser2.token, quizIndex.quizId)).toThrow(HTTPError[403]);
+  });
+
+  test('Deleting one quiz, Normal Case', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
+
+    // We wont be able to make a new Quiz
+    expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toThrow(HTTPError[400]);
+
+    //  Now, we remove this quiz
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex.quizId)).toEqual({});
+
+    // Adding the quizes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+  });
+
+  test('Multiple Quizzes Deletion from one user, Normal Case', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const quizIndex1 = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndex2 = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    const quizIndex3 = adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 4', 'This is a test');
+
+    // We wont be able to make new Quizzes
+    expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toThrow(HTTPError[400]);
+    expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test')).toThrow(HTTPError[400]);
+    expect(() => adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toThrow(HTTPError[400]);
+
+    // Now, we remove this quizzes
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex2.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser.token, quizIndex3.quizId)).toEqual({});
+
+    // Adding the quizzes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser.token, 'Test Quiz 3', 'This is a test')).toEqual({ quizId: expect.any(Number) });
+  });
+
+  test('Multiple quizzes Deletion with mutiple users, Normal Case', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jason', 'Mascheranous');
+    const newUser3 = authRegisterRequest('Validemailt@gmail.com', 'password123', 'Sanath', 'Nevagi');
+    const quizIndex1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar');
+    const quizIndex2 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason');
+    adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Made by Sanath');
+
+    // We wont be able to make new Quizzes
+    expect(() => adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toThrow(HTTPError[400]);
+    expect(() => adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toThrow(HTTPError[400]);
+
+    // Now, we remove this quizzes
+    expect(adminQuizRemoveRequest(newUser1.token, quizIndex1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser2.token, quizIndex2.quizId)).toEqual({});
+
+    // Adding the quizzes again should return us new quizIds and no error
+    expect(adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'Made by Divakar')).toEqual({ quizId: expect.any(Number) });
+    expect(adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Made by Jason')).toEqual({ quizId: expect.any(Number) });
+  });
+});
+
 describe('Tests of adminQuizList', () => {
   beforeEach(() => {
     clearRequest();

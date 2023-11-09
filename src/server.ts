@@ -184,19 +184,11 @@ app.post('/v2/admin/quiz', (req: Request, res: Response) => {
 });
 
 // adminQuizRemove Request
-app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+app.delete('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
-  const token = req.query.token as string;
+  const token = req.headers.token as string;
   const response = adminQuizRemove(token, quizId);
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
-      return res.status(403).json(response);
-    } else if ('error' in response) {
-      return res.status(403).json(response);
-    }
-  }
+
   saveDataStore();
   res.json(response);
 });
