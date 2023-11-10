@@ -244,7 +244,8 @@ describe('Tests of adminQuizInfo', () => {
       description: 'This is a test',
       questions: [],
       duration: expect.any(Number),
-      numQuestions: expect.any(Number)
+      numQuestions: expect.any(Number),
+      thumbnailUrl: ''
     });
   });
 });
@@ -734,6 +735,7 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       questions: [],
       duration: expect.any(Number),
       numQuestions: expect.any(Number),
+      thumbnailUrl: ''
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -745,6 +747,7 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       questions: [],
       duration: expect.any(Number),
       numQuestions: expect.any(Number),
+      thumbnailUrl: ''
     });
     expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid testing for description')).toEqual({});
     expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
@@ -756,6 +759,7 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       questions: [],
       duration: expect.any(Number),
       numQuestions: expect.any(Number),
+      thumbnailUrl: ''
     });
   });
 });

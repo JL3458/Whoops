@@ -149,7 +149,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     duration: question.duration,
     points: question.points,
     answers: question.answers as answerDescription[],
-    thumbnailUrl: question.thumbnailUrl
+    thumbnailUrl: question.thumbnailUrl,
   };
 
   tempQuiz.questions.push(tempQuestion);

@@ -32,7 +32,8 @@ export interface quiz {
   timeCreated: number,
   timeLastEdited: number,
   userId: number,
-  questions: question[]
+  questions: question[],
+  thumbnailUrl: string
 }
 
 export interface token {
