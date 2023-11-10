@@ -34,7 +34,7 @@ interface DuplicateQuestionReturn {
 
 // Helper function to generate random colour names
 function generateRandomColorName() {
-  const colorNames = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown', 'gray', 'cyan'];
+  const colorNames = ['red', 'blue', 'green', 'yellow', 'purple', 'brown', 'orange'];
   const randomIndex = Math.floor(Math.random() * colorNames.length);
   return colorNames[randomIndex];
 }
@@ -257,7 +257,7 @@ export function adminQuizQuestionMove(token: string, newPosition: number, quizId
   const data = getData();
 
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   const quiz1 = data.quizzes.find((q) => q.quizId === quizId);
 
@@ -265,7 +265,7 @@ export function adminQuizQuestionMove(token: string, newPosition: number, quizId
 
   // Checks if quizId refers to an invalid quiz
   if (!quiz1) {
-    return { error: 'quizId does not refer to a valid quiz' };
+    throw HTTPError(400, 'Quiz does not exist');
   }
 
   // Find the question in the quiz
@@ -273,22 +273,22 @@ export function adminQuizQuestionMove(token: string, newPosition: number, quizId
 
   // Checks if the questionId does not refer to a valid question within this quiz
   if (currentQuestionIndex === -1) {
-    return { error: 'Question Id does not refer to a valid question within this quiz' };
+    throw HTTPError(400, 'Question Id does not refer to a valid question within this quiz');
   }
 
   // Checks if the quiz belongs to the current logged in user
-  if (quiz1.userId !== Token1.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+  if (quiz1 !== undefined && quiz1.userId !== Token1.userId) {
+    throw HTTPError(403, 'Valid token is provided but user is not the owner of the quiz');
   }
 
   // Checks if newPosition is less than 0 or greater than (n-1)
   if (newPosition < 0 || newPosition > (quiz1.questions.length - 1)) {
-    return { error: 'Newposition is less than 0, or New position is greater than n-1 where n is the number of questions' };
+    throw HTTPError(400, 'NewPosition is less than 0, or NewPosition is greater than n-1 where n is the number of questions');
   }
 
   // Checks if the newPosition is the same as the current position
   if (newPosition === currentQuestionIndex) {
-    return { error: 'Newposition is the same as the current position' };
+    throw HTTPError(400, 'NewPosition is less than 0, or NewPosition is greater than n-1 where n is the number of questions');
   }
 
   // Update timeLastEdited of the quiz
