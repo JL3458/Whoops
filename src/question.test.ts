@@ -89,6 +89,10 @@ export function adminQuizQuestionDuplicateRequest(token: string, quizid: number,
   return requestHelper('POST', `/v2/admin/quiz/${quizid}/question/${questionid}/duplicate`, { }, { token });
 }
 
+export function adminQuizQuestionDeleteRequest(token: string, quizid: number, questionid: number) {
+  return requestHelper('DELETE', `/v2/admin/quiz/${quizid}/question/${questionid}`, { }, { token });
+}
+
 /// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreateQuestion', () => {
@@ -1304,5 +1308,392 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
       ],
       thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
     }]);
+  });
+});
+describe('Tests of adminQuizQuestionDelete', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Delete Question Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+    let quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Storing questions quizinfo returns to check
+    const quizInfoOutput = {
+      questionId: quizInfo.questions[0].questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          answer: 'Prince Wales',
+          colour: expect.any(String),
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          answer: 'Prince Charles',
+          colour: expect.any(String),
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          answer: 'Prince Diana',
+          colour: expect.any(String),
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    // Check if question is in questions array
+    expect(quizInfo.questions).toEqual([quizInfoOutput]);
+    expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId)).toEqual({});
+    quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Should be an emoty array after deleting question
+    expect(quizInfo.questions).toEqual([]);
+  });
+
+  test('Delete Question from multiple Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    const newQuestion2 = {
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    const newQuestion3 = {
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse1 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion1);
+    const createdQuestionResponse2 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion2);
+    const createdQuestionResponse3 = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion3);
+    const questionId1 = createdQuestionResponse1.questionId;
+    const questionId2 = createdQuestionResponse2.questionId;
+    const questionId3 = createdQuestionResponse3.questionId;
+    let quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Storing questions quizinfo returns to check
+    const newQuestionOutput1 = {
+      questionId: questionId1,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    const newQuestionOutput2 = {
+      questionId: questionId2,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    const newQuestionOutput3 = {
+      questionId: questionId3,
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    // Confirm if questions are in questions array
+    expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]);
+    // Delete the question
+    expect(adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, questionId2)).toEqual({});
+    quizInfo = adminQuizInfoRequest(newUser.token, newQuiz.quizId);
+    // Should be an array with 2 questions after deleting question as shown below
+    const quizInfoOutput = [{
+      questionId: questionId1,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    },
+    {
+      questionId: questionId3,
+      question: 'Sample Question 3',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    }];
+    expect(quizInfo.questions).toEqual(quizInfoOutput);
+  });
+
+  test('Attempt to delete Non-Existent Question', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    // Attempt to delete a non-existent question (use a non-existent questionId)
+    expect(() => adminQuizQuestionDeleteRequest(newUser.token, newQuiz.quizId, createdQuestionResponse.questionId + 1)).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Token Provided for Delete', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    expect(() => adminQuizQuestionDeleteRequest('', newQuiz.quizId, questionId)).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token but not of user', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Jane', 'Choi');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    expect(() => adminQuizQuestionDeleteRequest(newUser2.token, newQuiz.quizId, questionId)).toThrow(HTTPError[403]);
   });
 });

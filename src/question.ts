@@ -307,7 +307,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   // If Token is an empty string
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -315,7 +315,7 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   // Finds the quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
+    throw HTTPError(400, 'QuizId is not of valid quiz');
   }
 
   // Find the question in the quiz by questionId
@@ -323,12 +323,12 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
 
   // Check if the question with the specified questionId exists
   if (existingQuestion === -1) {
-    return { error: 'Specified questionId does not exist in this quiz' };
+    throw HTTPError(400, 'Question Id does not refer to a valid question within this quiz');
   }
 
   // Checks if the quiz belongs to the current logged-in user
   if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
   }
 
   // Delete the question
