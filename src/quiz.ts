@@ -362,7 +362,7 @@ export function adminQuizViewTrash (token: string): QuizViewTrashReturn | ErrorR
   const data = getData();
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session');
+    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -383,7 +383,7 @@ export function adminQuizRestore(token: string, quizId: number): object | ErrorR
   const data = getData();
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -392,18 +392,20 @@ export function adminQuizRestore(token: string, quizId: number): object | ErrorR
   const tempQuiz = data.trash.find((quiz) => quiz.quizId === quizId);
 
   if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
+    throw HTTPError(400, 'QuizID refers to a quiz that is not currently in the trash');
   }
+
+  // TODO: CHECK FOR All sessions for this quiz must be in END state (HTTPError 400)
 
   // Checks if the quiz belongs to the current logged in user
   if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
   }
 
   // Checks if Quiz ID refers to a quiz that has a name that is already used by the target user
   const targetTrashQuizzes = data.quizzes.filter((quiz) => quiz.userId === tempToken.userId);
   if (targetTrashQuizzes.find((quiz) => quiz.name === tempQuiz.name) !== undefined) {
-    return { error: 'The target user already has a quiz with the same name' };
+    throw HTTPError(400, 'Quiz name of the restored quiz is already used by another active quiz');
   }
 
   // find the position of the targetted quiz in the trash array.
