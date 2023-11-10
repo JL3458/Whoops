@@ -9,7 +9,8 @@ export function clear() {
     tokens: [],
     trash: [],
     quizIdCounter: 0,
-    questionIdCounter: 0
+    questionIdCounter: 0,
+    sessions: []
   };
 
   // Setting data dataStore to original state
