@@ -41,11 +41,33 @@ export interface token {
   sessionId: string
 }
 
+export interface metadata {
+  quizId: number,
+  name: string,
+  description: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  numQuestions: number,
+  questions: question[],
+  duration: number,
+  thumbnailUrl: string
+}
+
+export interface session {
+  sessionId: number,
+  autoStartNum: number,
+  state: string,
+  atQuestion: number,
+  players: string[],
+  metadata: metadata
+}
+
 interface DataStore {
   users: user[]
   quizzes: quiz[]
   tokens: token[]
   trash: quiz[]
+  sessions: session[]
   quizIdCounter: number
   questionIdCounter: number
 }
@@ -56,7 +78,8 @@ let data: DataStore = {
   tokens: [],
   trash: [],
   quizIdCounter: 0,
-  questionIdCounter: 0
+  questionIdCounter: 0,
+  sessions: [],
 };
 
 // Use get() to access the data
