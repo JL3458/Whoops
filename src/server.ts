@@ -329,20 +329,13 @@ app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
 });
 
 // adminQuizQuestionMove
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
-  const { token, newPosition } = req.body;
+app.put('/v2/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { newPosition } = req.body;
+  const token = req.headers.token as string;
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
   const response = adminQuizQuestionMove(token, newPosition, quizId, questionId);
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
-      return res.status(403).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
+
   saveDataStore();
   res.json(response);
 });
