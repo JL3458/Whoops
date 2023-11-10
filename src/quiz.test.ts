@@ -84,11 +84,11 @@ export function adminQuizRemoveRequest(token: string, quizid: number) {
   return requestHelper('DELETE', `/v2/admin/quiz/${quizid}`, {}, { token });
 }
 
-export function adminQuizInfoRequest(token: string, quizid: number) {
-  return requestHelper('GET', `/v2/admin/quiz/${quizid}`, {}, { token });
+export function adminQuizNameUpdateRequest(token: string, quizid: number, name: string) {
+  return requestHelper('PUT', `/v2/admin/quiz/${quizid}/name`, { name }, { token });
 }
 
-export function adminQuizListRequest(token: string) {
+function adminQuizListRequest(token: string) {
   return requestHelper('GET', '/v2/admin/quiz/list', {}, { token });
 }
 
@@ -98,6 +98,10 @@ export function adminQuizViewTrashRequest(token: string) {
 
 export function adminQuizTransferRequest(token: string, quizid: number, userEmail: string) {
   return requestHelper('POST', `/v2/admin/quiz/${quizid}/transfer`, { userEmail }, { token });
+}
+
+export function adminQuizInfoRequest(token: string, quizid: number) {
+  return requestHelper('GET', `/v2/admin/quiz/${quizid}`, {}, { token });
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -467,5 +471,55 @@ describe('Tests of adminQuizTransfer', () => {
     const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
     adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test');
     expect(() => adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toThrow(HTTPError[400]);
+  });
+});
+
+describe('Tests of adminQuizNameUpdate', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizNameUpdateRequest('', quizIndex.quizId, 'New Name')).toThrow(HTTPError[401]);
+  });
+
+  test('QuizId is Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'This is a test');
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId + 1, 'New Name')).toThrow(HTTPError[403]);
+  });
+
+  test('Quiz is not owned by the owner', () => {
+    const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemails@gmail.com', 'password123', 'Jane', 'Choi');
+    const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizNameUpdateRequest(newUser2.token, quizIndex.quizId, 'New Name')).toThrow(HTTPError[403]);
+  });
+
+  test('Invalid Quiz Names', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, '')).toThrow(HTTPError[400]);
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'Alexander Bartholomew Fitzwilliam Throckmorton Montgomery III')).toThrow(HTTPError[400]);
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, '!!!@@@@##########$$$$$$$$$$$$$**********&&&&&&&&&&&&^^^^^^^^^^')).toThrow(HTTPError[400]);
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, '!!!')).toThrow(HTTPError[400]);
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'J@n3 Sm!th')).toThrow(HTTPError[400]);
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, '                                    ')).toThrow(HTTPError[400]);
+  });
+
+  test('Quiz name already exists', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    adminQuizCreateRequest(newUser.token, 'Test Quiz 2', 'Sample Quiz Testing');
+    expect(() => adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'Test Quiz 2')).toThrow(HTTPError[400]);
+  });
+
+  test('Changing Name Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const quizIndex = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizNameUpdateRequest(newUser.token, quizIndex.quizId, 'Test Quiz 2')).toEqual({});
   });
 });

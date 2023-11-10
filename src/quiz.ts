@@ -231,7 +231,7 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   const data = getData();
 
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   // Converts the token string into the token object
@@ -239,35 +239,35 @@ export function adminQuizNameUpdate(token: string, quizId: number, name: string)
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
+    throw HTTPError(403, 'Quiz does not exist');
   }
 
   // Checks if the quiz belongs to the current logged-in user
   if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'User does not own this quiz');
   }
 
   // Checks if name contains invalid characters. Valid characters are alphanumeric and spaces
   const validCharacter = /^[a-zA-Z0-9\s]*$/;
   if (!validCharacter.test(name)) {
-    return { error: 'Name contains characters other than alphanumeric and spaces' };
+    throw HTTPError(400, 'Name contains characters other than alphanumeric and space');
   }
 
   // Checks if name is either less than 3 characters long or more than 30 characters long (Invalid case)
   if (name.length < 3 || name.length > 30) {
-    return { error: 'Name should be between 3 and 30 characters' };
+    throw HTTPError(400, 'Name should be between 3 and 30 characters');
   }
 
   // Checks if the new name is the same as the old name (no need to proceed)
   if (tempQuiz.name === name) {
-    return {};
+    throw HTTPError(400, 'Quiz name same to the previous quiz made by the user');
   }
 
   // Checks if name is already used by the current logged-in user for another quiz
   const otherQuizWithSameName = data.quizzes.find((q) => q.userId === tempToken.userId && q.quizId !== quizId && q.name === name);
 
   if (otherQuizWithSameName) {
-    return { error: 'Name is already used by another quiz made by the user' };
+    throw HTTPError(400, 'Quiz name same to the previous quiz made by the user');
   }
 
   // Update the quiz name
