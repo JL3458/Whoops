@@ -343,31 +343,25 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
 
   // Checks if the token is empty
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   const Quiz1 = data.quizzes.find((quiz) => quiz.quizId === quizId);
-
-  // Checks if quizId refers to an invalid quiz
-  if (Quiz1 === undefined) {
-    return { error: 'QuizId does not refer to a valid quiz' };
-  }
 
   // Find the source question in the quiz
   const sourceQuestionIndex = Quiz1.questions.findIndex((question) => question.questionId === questionId);
 
   // Checks if the source question is not found
   if (sourceQuestionIndex === -1) {
-    return { error: 'Question Id does not refer to a valid question within this quiz' };
+    throw HTTPError(400, 'Question Id does not refer to a valid question within this quiz');
   }
 
   const Token1 = JSON.parse(decodeURIComponent(token));
 
   // Checks if the quiz belongs to the current logged-in user
   if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'Valid token is provided but user is not the owner of the quiz');
   }
-
   // Duplicate the source question manually
   const sourceQuestion = Quiz1.questions[sourceQuestionIndex];
   const newQuestionId = Quiz1.questions.length + 1;
@@ -379,6 +373,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
     duration: sourceQuestion.duration,
     points: sourceQuestion.points,
     answers: sourceQuestion.answers,
+    thumbnailUrl: sourceQuestion.thumbnailUrl
   };
 
   // Update timeLastEdited of the quiz
