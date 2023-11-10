@@ -339,22 +339,12 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
 });
 
 // adminQuizQuestionDuplicate
-app.post('/v1/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
-  const { token } = req.body;
+app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
-
+  const token = req.headers.token as string
   const response = adminQuizQuestionDuplicate(token, quizId, questionId);
 
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
-      return res.status(403).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
   saveDataStore();
   res.json(response);
 });
