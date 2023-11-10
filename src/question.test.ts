@@ -4,7 +4,7 @@ import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from './config.json';
 import { clearRequest } from './other.test';
 import { authRegisterRequest } from './auth.test';
-import { adminQuizCreateRequest } from './quiz.test';
+import { adminQuizCreateRequest, adminQuizInfoRequest } from './quiz.test';
 
 // ADD LATER
 // import (adminQuizInfoRequest} from './quiz.test';
@@ -79,6 +79,10 @@ const requestHelper = (
 
 export function adminQuizCreateQuestionRequest(token: string, quizid: number, questionBody : questionBody) {
   return requestHelper('POST', `/v2/admin/quiz/${quizid}/question`, { questionBody }, { token });
+}
+
+export function adminQuizQuestionMoveRequest(token: string, newPosition: number, quizid: number, questionid: number) {
+  return requestHelper('PUT', `/v2/admin/quiz/${quizid}/question/${questionid}/move`, { newPosition }, { token });
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -651,5 +655,395 @@ describe('Tests of adminQuizCreateQuestion', () => {
           thumbnailUrl: 'https://edstem.org/au/courses/13837/discussion/1687213'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
+  });
+});
+
+describe('Tests of adminQuizQuestionMove', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Empty or Invalid', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(() => adminQuizQuestionMoveRequest('', 0, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(() => adminQuizQuestionMoveRequest(User2.token, 0, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[403]);
+  });
+
+  /* test('QuizId does not refer to a valid quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId + 1, newQuestion.questionId)).toThrow(HTTPError[400]);
+  }); */
+
+  test('QuestionId does not refer to a valid question within this quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(() => adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion.questionId + 1)).toThrow(HTTPError[400]);
+  });
+
+  test('NewPosition is less than 0, or NewPosition is greater than n-1 where n is the number of questions', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const Question2 =
+      {
+        question: 'Sample Question 2',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2);
+    expect(() => adminQuizQuestionMoveRequest(User1.token, -1, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[400]);
+    expect(() => adminQuizQuestionMoveRequest(User1.token, 2, Quiz1.quizId, newQuestion1.questionId)).toThrow(HTTPError[400]);
+  });
+
+  test('Check newposition is same as current position', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Kobe', 'Bryant');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+
+    const Question2 =
+  {
+    question: 'Sample Question 2',
+    duration: 5,
+    points: 4,
+    answers: [
+      {
+        answer: 'Prince Wales',
+        correct: true
+      },
+      {
+        answer: 'Prince Charles',
+        correct: true
+      },
+      {
+        answer: 'Prince Diana',
+        correct: true
+      }
+    ],
+    thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+  };
+
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const newQuestion2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2);
+
+    // expect(adminQuizCreateQuestionRequest(User1.token, Quiz1.quizid, Question2)).toEqual({})
+    expect(() => adminQuizQuestionMoveRequest(User1.token, 1, Quiz1.quizId, newQuestion2.questionId)).toThrow(HTTPError[400]);
+  });
+
+  test('Valid test', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+      {
+        question: 'Sample Question 1',
+        duration: 5,
+        points: 4,
+        answers: [
+          {
+            answer: 'Prince Wales',
+            correct: true
+          },
+          {
+            answer: 'Prince Charles',
+            correct: true
+          },
+          {
+            answer: 'Prince Diana',
+            correct: true
+          }
+        ],
+        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      };
+    const Question2 =
+  {
+    question: 'Sample Question 2',
+    duration: 5,
+    points: 4,
+    answers: [
+      {
+        answer: 'Prince Wales',
+        correct: true
+      },
+      {
+        answer: 'Prince Charles',
+        correct: true
+      },
+      {
+        answer: 'Prince Diana',
+        correct: true
+      }
+    ],
+    thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+  };
+
+    const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const newQuestion2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2);
+
+    const newOutput1 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+
+    expect(newOutput1.questions).toEqual([{
+      questionId: newQuestion1.questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    },
+    {
+      questionId: newQuestion2.questionId,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    }]);
+
+    expect(adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion2.questionId)).toEqual({});
+
+    const newOutput2 = adminQuizInfoRequest(User1.token, Quiz1.quizId);
+
+    expect(newOutput2.questions).toEqual([{
+      questionId: newQuestion2.questionId,
+      question: 'Sample Question 2',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    },
+    {
+      questionId: newQuestion1.questionId,
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answerId: expect.any(Number),
+          colour: expect.any(String),
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    }]);
   });
 });
