@@ -428,7 +428,7 @@ export function adminQuizTrashEmpty (token: string, quizIds: string): object | E
   const data = getData();
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
@@ -441,12 +441,12 @@ export function adminQuizTrashEmpty (token: string, quizIds: string): object | E
 
     // Checks if quizId refers to an invalid quiz
     if (tempQuiz === undefined) {
-      return { error: 'One or more of the quizIds is not of a valid quiz' };
+      throw HTTPError(400, 'QuizID refers to a quiz that is not currently in the trash');
     }
 
     // Checks if the quiz belongs to the current logged in user
     if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
-      return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+      throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
     }
 
     // Removes the quiz from quizzes list
