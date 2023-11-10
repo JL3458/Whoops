@@ -4,11 +4,9 @@ import request, { HttpVerb } from 'sync-request-curl';
 import { port, url } from './config.json';
 
 import { clearRequest } from './other.test';
-
-// ADD THESE LATER PLEASE
-// import { authLoginRequest, authLogoutRequest } from './auth.test';
-
 import { authRegisterRequest } from './auth.test';
+import { adminQuizCreateQuestionRequest } from './question.test';
+import { adminSessionStartRequest } from './session.test';
 
 import { IncomingHttpHeaders } from 'http';
 import HTTPError from 'http-errors';
@@ -272,6 +270,35 @@ describe('Tests of adminQuizRemove', () => {
     expect(() => adminQuizRemoveRequest(newUser.token, 100)).toThrow(HTTPError[400]);
   });
 
+  test('Removal when sessions are not in END state', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
+    expect(() => adminQuizRemoveRequest(User1.token, Quiz1.quizId)).toThrow(HTTPError[400]);
+  });
+
   test('Valid Token Provided but user is not owner of the quiz', () => {
     const newUser1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const newUser2 = authRegisterRequest('Validemail12@gmail.com', 'password123', 'Shubham', 'Dessai');
@@ -452,6 +479,36 @@ describe('Tests of adminQuizTransfer', () => {
     const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
     const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
     expect(() => adminQuizTransferRequest(newUser2.token, quizIndex.quizId, 'Validemail@gmail.com')).toThrow(HTTPError[403]);
+  });
+
+  test('Tests for sessions are not in END state', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    authRegisterRequest('Validemail2@gmail.com', 'password123', 'Pattrick', 'Dessai');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
+    expect(() => adminQuizTransferRequest(User1.token, Quiz1.quizId, 'Validemail2@gmail.com')).toThrow(HTTPError[400]);
   });
 
   test('Test for Normal Cases', () => {

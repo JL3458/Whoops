@@ -5,9 +5,7 @@ import { port, url } from './config.json';
 import { clearRequest } from './other.test';
 import { authRegisterRequest } from './auth.test';
 import { adminQuizCreateRequest, adminQuizInfoRequest } from './quiz.test';
-
-// ADD LATER
-// import (adminQuizInfoRequest} from './quiz.test';
+import { adminSessionStartRequest } from './session.test';
 
 import { questionBody } from './question';
 import { IncomingHttpHeaders } from 'http';
@@ -1310,6 +1308,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
     }]);
   });
 });
+
 describe('Tests of adminQuizQuestionDelete', () => {
   beforeEach(() => {
     clearRequest();
@@ -1695,5 +1694,34 @@ describe('Tests of adminQuizQuestionDelete', () => {
     const questionId = createdQuestionResponse.questionId;
 
     expect(() => adminQuizQuestionDeleteRequest(newUser2.token, newQuiz.quizId, questionId)).toThrow(HTTPError[403]);
+  });
+
+  test('Tests for sessions are not in END state', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    };
+    const question1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
+    expect(() => adminQuizQuestionDeleteRequest(User1.token, Quiz1.quizId, question1.questionId)).toThrow(HTTPError[400]);
   });
 });
