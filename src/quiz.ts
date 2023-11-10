@@ -282,24 +282,24 @@ export function adminQuizDescriptionUpdate(token: string, quizId: number, descri
   const Quiz1 = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
 
   const Token1 = JSON.parse(decodeURIComponent(token));
 
   // Checks if quizId is invalid
   if (Quiz1 === undefined) {
-    return { error: 'QuizId does not refer to a valid quizId' };
+    throw HTTPError(403, 'Quiz does not exist');
   }
 
   // Checks if the quiz belongs to the current logged in user
   if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
+    throw HTTPError(403, 'User does not own this quiz');
   }
 
   // Checks whether description is more than 100 characters in length
   if (description.length > 100) {
-    return { error: 'Description is more than 100 characters in length' };
+    throw HTTPError(400, 'Description is more than 100 characters in length');
   }
 
   // Updates the quiz description

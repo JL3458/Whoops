@@ -80,6 +80,10 @@ export function adminQuizCreateRequest(token: string, name: string, description:
   return requestHelper('POST', '/v2/admin/quiz', { name, description }, { token });
 }
 
+export function adminQuizDescriptionUpdateRequest(token: string, quizid: number, description: string) {
+  return requestHelper('PUT', `/v2/admin/quiz/${quizid}/description`, { description }, { token });
+}
+
 export function adminQuizRemoveRequest(token: string, quizid: number) {
   return requestHelper('DELETE', `/v2/admin/quiz/${quizid}`, {}, { token });
 }
@@ -600,5 +604,73 @@ describe('Tests for adminQuizRestore', () => {
     expect(adminQuizRestoreRequest(newUser1.token, quiz2.quizId)).toEqual({});
     expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 456' }] });
     expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 123' }] });
+  });
+});
+
+describe('Tests of adminQuizDescriptionUpdate', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizDescriptionUpdateRequest('', quiz1.quizId, 'Valid description')).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const User2 = authRegisterRequest('validddemail@gmail.com', 'validpassword12', 'Yuki', 'Tsunoda');
+    expect(() => adminQuizDescriptionUpdateRequest(User2.token, quiz1.quizId, 'Valid description')).toThrow(HTTPError[403]);
+  });
+
+  test('QuizId does not refer to a valid quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 2', 'This is a test');
+    expect(() => adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId + 1, 'Valid description')).toThrow(HTTPError[403]);
+  });
+
+  test('Description names are invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    expect(() => adminQuizCreateRequest(newUser.token, 'Valid quiz name 1', 'ThisStringNOTIsExactly100CharactersLongThisStringNOTIsExactly100CharactersLong Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor Andrew is such a great tutor')).toThrow(HTTPError[400]);
+  });
+
+  test('Checking if description update is working', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'This is a test',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
+    });
+    expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid description')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'Valid description',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
+    });
+    expect(adminQuizDescriptionUpdateRequest(User1.token, quiz1.quizId, 'Valid testing for description')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'Valid testing for description',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
+    });
   });
 });
