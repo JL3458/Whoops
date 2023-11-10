@@ -143,7 +143,8 @@ export function adminQuizCreate(token: string, name: string, description: string
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
     userId: tempToken.userId,
-    questions: [] as question[]
+    questions: [] as question[],
+    thumbnailUrl: ''
   };
 
   data.quizzes.push(tempQuizStorage);
@@ -224,6 +225,7 @@ export function adminQuizInfo(token: string, quizId: number): QuizInfoReturn | E
     numQuestions: numQuestions,
     questions: tempQuiz.questions,
     duration: totalQuestionDuration,
+    thumbnailUrl: tempQuiz.thumbnailUrl,
   };
 }
 
