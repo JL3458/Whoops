@@ -361,7 +361,7 @@ export function adminQuizQuestionDuplicate(token: string, quizId: number, questi
   // Checks if the quiz belongs to the current logged-in user
   if (Quiz1 !== undefined && Quiz1.userId !== Token1.userId) {
     throw HTTPError(403, 'Valid token is provided but user is not the owner of the quiz');
-}
+  }
   // Duplicate the source question manually
   const sourceQuestion = Quiz1.questions[sourceQuestionIndex];
   const newQuestionId = Quiz1.questions.length + 1;

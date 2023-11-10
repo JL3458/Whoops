@@ -89,7 +89,6 @@ export function adminQuizQuestionDuplicateRequest(token: string, quizid: number,
   return requestHelper('POST', `/v2/admin/quiz/${quizid}/question/${questionid}/duplicate`, { }, { token });
 }
 
-
 /// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreateQuestion', () => {
@@ -1055,7 +1054,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
         thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    expect(() =>adminQuizQuestionDuplicateRequest('', Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[401]);
+    expect(() => adminQuizQuestionDuplicateRequest('', Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[401]);
   });
   test('Valid token is provided, but user is not an owner of this quiz', () => {
     const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
@@ -1083,7 +1082,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
         };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    expect(()=> adminQuizQuestionDuplicateRequest(User2.token, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[403]);
+    expect(() => adminQuizQuestionDuplicateRequest(User2.token, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[403]);
   });
 
   test('QuestionId does not refer to a valid question within this quiz', () => {
@@ -1111,7 +1110,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
         thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    expect(()=> adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion.questionId + 1)).toThrow(HTTPError[400]);
+    expect(() => adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion.questionId + 1)).toThrow(HTTPError[400]);
   });
 
   test('Valid test', () => {

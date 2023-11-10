@@ -342,7 +342,7 @@ app.delete('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Re
 app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
-  const token = req.headers.token as string
+  const token = req.headers.token as string;
   const response = adminQuizQuestionDuplicate(token, quizId, questionId);
 
   saveDataStore();
