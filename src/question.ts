@@ -2,6 +2,7 @@ import { getData, setData } from './dataStore';
 import { checkValidToken } from './quiz';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
+import { States } from './session';
 
 /// ///////////////// Function Return Interfaces ///////////////////
 
@@ -324,6 +325,12 @@ export function adminQuizQuestionDelete(token: string, quizId: number, questionI
   // Check if the question with the specified questionId exists
   if (existingQuestion === -1) {
     throw HTTPError(400, 'Question Id does not refer to a valid question within this quiz');
+  }
+
+  // Checking if all sessions for this quiz are in END state
+  const quizSessions = data.sessions.filter((session) => session.metadata.quizId === quizId);
+  if (quizSessions.find((session) => session.state !== States.END) !== undefined) {
+    throw HTTPError(400, 'All sessions for this quiz must be in END state');
   }
 
   // Checks if the quiz belongs to the current logged-in user
