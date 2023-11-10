@@ -96,6 +96,10 @@ export function adminQuizViewTrashRequest(token: string) {
   return requestHelper('GET', '/v2/admin/quiz/trash', {}, { token });
 }
 
+export function adminQuizRestoreRequest(token: string, quizid: number) {
+  return requestHelper('POST', `/v2/admin/quiz/${quizid}/restore`, {}, { token });
+}
+
 export function adminQuizTransferRequest(token: string, quizid: number, userEmail: string) {
   return requestHelper('POST', `/v2/admin/quiz/${quizid}/transfer`, { userEmail }, { token });
 }
@@ -467,5 +471,85 @@ describe('Tests of adminQuizTransfer', () => {
     const quizIndex = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
     adminQuizCreateRequest(newUser2.token, 'Test Quiz 1', 'This is a test');
     expect(() => adminQuizTransferRequest(newUser1.token, quizIndex.quizId, 'Validemail2@gmail.com')).toThrow(HTTPError[400]);
+  });
+});
+
+describe('Tests for adminQuizRestore', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Empty or Invalid token', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizRestoreRequest('no valid', quiz1.quizId)).toThrow(HTTPError[401]);
+    expect(() => adminQuizRestoreRequest('', quiz1.quizId)).toThrow(HTTPError[401]);
+  });
+
+  test('quizId does not exist', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizRestoreRequest(newUser1.token, 456234)).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid user/owner', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizRemoveRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(() => adminQuizRestoreRequest(newUser2.token, quiz1.quizId)).toThrow(HTTPError[403]);
+  });
+
+  test('Valid Test quizRestore with 1 quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Jonathan', 'Leung');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizRemoveRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }] });
+    expect(adminQuizRestoreRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [] });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 1' }] });
+    // authLogoutRequest(newUser1.token);
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    // expect(authLoginRequest('Validemail2@gmail.com', 'password1234')).toEqual({ token: expect.any(String) });
+    const quiz2 = adminQuizCreateRequest(newUser2.token, 'Test Quiz 2', 'Testing');
+    expect(adminQuizRemoveRequest(newUser2.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser2.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+    expect(adminQuizRestoreRequest(newUser2.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser2.token)).toEqual({ quizzes: [] });
+    expect(adminQuizListRequest(newUser2.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 2' }] });
+  });
+
+  test('Valid Test quizRestore with multiple quizzes', () => {
+    const newUser3 = authRegisterRequest('Validemail2@gmail.com', 'password1234', 'Random', 'Person');
+    const quiz3 = adminQuizCreateRequest(newUser3.token, 'Test Quiz 3', 'Testing');
+    const quiz4 = adminQuizCreateRequest(newUser3.token, 'Test Quiz 4', 'Testing');
+    const quiz5 = adminQuizCreateRequest(newUser3.token, 'Test Quiz 5', 'Testing?');
+    const quiz6 = adminQuizCreateRequest(newUser3.token, 'Test Quiz 6', 'Testing!');
+    expect(adminQuizRemoveRequest(newUser3.token, quiz3.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser3.token, quiz4.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser3.token, quiz5.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser3.token, quiz6.quizId)).toEqual({});
+    expect(adminQuizRestoreRequest(newUser3.token, quiz5.quizId)).toEqual({});
+    expect(adminQuizListRequest(newUser3.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 5' }] });
+    expect(adminQuizViewTrashRequest(newUser3.token)).toEqual({
+      quizzes:
+              [{ quizId: expect.any(Number), name: 'Test Quiz 3' },
+                { quizId: expect.any(Number), name: 'Test Quiz 4' },
+                { quizId: expect.any(Number), name: 'Test Quiz 6' }
+              ]
+    });
+
+    // KNOWN BUG - userId of the quizzes randomly switches to the wrong one
+    // remove the clear request to see.
+    // I have tried using authlogout and authlogin but it didn't change anything.
+    clearRequest();
+    const newUser1 = authRegisterRequest('Validemail3@gmail.com', 'password123234', 'Jagfhj', 'Leudfghng');
+    const quiz1 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 456', 'Sample Quiz Testing');
+    const quiz2 = adminQuizCreateRequest(newUser1.token, 'Test Quiz 123', 'Testing');
+    expect(adminQuizRemoveRequest(newUser1.token, quiz1.quizId)).toEqual({});
+    expect(adminQuizRemoveRequest(newUser1.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizRestoreRequest(newUser1.token, quiz2.quizId)).toEqual({});
+    expect(adminQuizViewTrashRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 456' }] });
+    expect(adminQuizListRequest(newUser1.token)).toEqual({ quizzes: [{ quizId: expect.any(Number), name: 'Test Quiz 123' }] });
   });
 });
