@@ -32,6 +32,7 @@ import {
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
+import { adminSessionStart } from './session';
 
 // Set up web app
 const app = express();
@@ -99,7 +100,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 
 // adminUserDetails Request
 app.get('/v2/admin/user/details', (req: Request, res: Response) => {
-  // token value obtained fromm header
+  // token value obtained from header
   const token = req.headers.token as string;
 
   // logic of the function is retrieved from auth.ts
@@ -334,6 +335,19 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
   const questionId = parseInt(req.params.questionid);
   const token = req.headers.token as string;
   const response = adminQuizQuestionDuplicate(token, quizId, questionId);
+
+  saveDataStore();
+  res.json(response);
+});
+
+/// ////////////////////////// session.ts ///////////////////////////////
+
+app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.headers.token as string;
+  const { autoStartNum } = req.body;
+
+  const response = adminSessionStart(token, quizId, autoStartNum);
 
   saveDataStore();
   res.json(response);
