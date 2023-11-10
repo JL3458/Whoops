@@ -1,5 +1,6 @@
 import { getData, setData, question } from './dataStore';
 import HTTPError from 'http-errors';
+import { States } from './session';
 
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
@@ -29,6 +30,7 @@ interface QuizInfoReturn {
     questions: question[]
     duration: number,
     numQuestions: number,
+    thumbnailUrl: string
 }
 
 interface QuizViewTrashReturn {
@@ -166,7 +168,11 @@ export function adminQuizRemove(token: string, quizId: number): object | ErrorRe
 
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
-  // TODO: Add a Error Checking for All sessions for this quiz must be in END state (HTTP ERROR 404)
+  // Checking if all sessions for this quiz are in END state
+  const quizSessions = data.sessions.filter((session) => session.metadata.quizId === quizId);
+  if (quizSessions.find((session) => session.state !== States.END) !== undefined) {
+    throw HTTPError(400, 'All sessions for this quiz must be in END state');
+  }
 
   // Checks if quizId refers to an invalid quiz
   if (tempQuiz === undefined) {
@@ -330,7 +336,11 @@ export function adminQuizTransfer(token: string, quizId: number, userEmail: stri
     throw HTTPError(400, 'quizId is not of a valid quiz');
   }
 
-  // TODO: CHECK FOR All sessions for this quiz must be in END state (HTTPError 400)
+  // Checking if all sessions for this quiz are in END state
+  const quizSessions = data.sessions.filter((session) => session.metadata.quizId === quizId);
+  if (quizSessions.find((session) => session.state !== States.END) !== undefined) {
+    throw HTTPError(400, 'All sessions for this quiz must be in END state');
+  }
 
   // Check if userEmail is valid
   const tempTargertUser = data.users.find((user) => user.email === userEmail);
