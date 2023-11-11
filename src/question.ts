@@ -1,8 +1,8 @@
-import { getData, setData } from './dataStore';
+import { getData, setData, States } from './dataStore';
 import { checkValidToken } from './quiz';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
-import { States } from './session';
+
 /// ///////////////// Function Return Interfaces ///////////////////
 
 interface answer {
