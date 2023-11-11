@@ -123,6 +123,7 @@ describe('Tests of adminSessionStart', () => {
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminSessionStartRequest('', Quiz1.quizId, 3)).toThrow(HTTPError[401]);
   });
+
   test('Valid token is provided, but user is not an owner of this quiz', () => {
     const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
     const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
