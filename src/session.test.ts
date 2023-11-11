@@ -111,7 +111,7 @@ describe('Tests of adminSessionStart', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminSessionStartRequest('', Quiz1.quizId, 3)).toThrow(HTTPError[401]);
@@ -139,7 +139,7 @@ describe('Tests of adminSessionStart', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminSessionStartRequest(User2.token, Quiz1.quizId, 3)).toThrow(HTTPError[403]);
@@ -167,7 +167,7 @@ describe('Tests of adminSessionStart', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminSessionStartRequest(User1.token, Quiz1.quizId, 51)).toThrow(HTTPError[400]);
@@ -203,7 +203,7 @@ describe('Tests of adminSessionStart', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
 
@@ -244,7 +244,7 @@ describe('Tests of adminSessionStart', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });

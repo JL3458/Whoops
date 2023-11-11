@@ -41,7 +41,7 @@ function generateRandomColorName() {
 }
 
 function isValidImageFileType(fileType: string): boolean {
-  return ['jpg', 'jpeg', 'png'].includes(fileType.toLowerCase());
+  return ['jpg', 'png'].includes(fileType.toLowerCase());
 }
 
 /// //////////////////// Main Functions ///////////////////////////
@@ -115,6 +115,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     throw HTTPError(400, 'The thumbnailUrl is not an empty string');
   }
 
+  // Check if the thumbnailUrl when fetched does not return a valid file - PNG/JPG
   try {
     const response = request('GET', question.thumbnailUrl);
     if (response.statusCode === 200) {
@@ -125,10 +126,14 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
         throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
       }
     } else {
-      throw HTTPError(400, 'The thumbnailUrl does not return a valid file');
+      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
     }
   } catch (error) {
-    throw HTTPError(400, 'Error in fetching thumbnail');
+    if (error.message.includes('The thumbnailUrl should be a JPG or PNG file')) {
+      throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
+    } else {
+      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
+    }
   }
 
   interface answerDescription extends answer {
