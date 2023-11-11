@@ -114,6 +114,10 @@ export function adminQuizInfoRequest(token: string, quizid: number) {
   return requestHelper('GET', `/v2/admin/quiz/${quizid}`, {}, { token });
 }
 
+export function adminQuizThumbnailUpdateRequest(token: string, quizid: number, imgUrl: string) {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizid}/thumbnail`, { imgUrl }, { token });
+}
+
 /// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreate', () => {
@@ -292,7 +296,7 @@ describe('Tests of adminQuizRemove', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
@@ -504,7 +508,7 @@ describe('Tests of adminQuizTransfer', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
@@ -817,6 +821,74 @@ describe('Tests of adminQuizDescriptionUpdate', () => {
       duration: expect.any(Number),
       numQuestions: expect.any(Number),
       thumbnailUrl: ''
+    });
+  });
+});
+
+describe('Tests of adminQuizThumbnailUpdate', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is empty', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest('', quiz1.quizId, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png')).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const User2 = authRegisterRequest('validddemail@gmail.com', 'validpassword12', 'Yuki', 'Tsunoda');
+    expect(() => adminQuizThumbnailUpdateRequest(User2.token, quiz1.quizId, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png')).toThrow(HTTPError[403]);
+  });
+
+  test('QuizId does not refer to a valid quiz', () => {
+    const User1 = authRegisterRequest('maxverstappen@gmail.com', 'validpassword123', 'Steph', 'Curry');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 2', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId + 1, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png')).toThrow(HTTPError[400]);
+  });
+
+  test('imgUrl when fetch is not a JPG or PNG image', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29.jpeg')).toThrow(HTTPError[400]);
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://www.adobe.com/au/creativecloud/file-types/image/raster/png-file.html')).toThrow(HTTPError[400]);
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://files.eric.ed.gov/fulltext/ED252173.pdf')).toThrow(HTTPError[400]);
+  });
+
+  test('imgUrl when fetched does not return a valid file', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://nw-syd-gitlab.cseunsw.tech/COMP1531/23T3/groups/W18A_BOOST/project-backend/-/blob/master/swagger.yaml?ref_type=heads')).toThrow(HTTPError[400]);
+  });
+
+  test('To check for whether adminQuizThumbnailUpdateRequest works appropriately', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'This is a test',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    });
+    expect(adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://static.vecteezy.com/system/resources/previews/008/505/783/original/cricket-ball-illustration-png.png')).toEqual({});
+    expect(adminQuizInfoRequest(User1.token, quiz1.quizId)).toEqual({
+      quizId: quiz1.quizId,
+      name: 'Test Quiz 1',
+      timeCreated: expect.any(Number),
+      timeLastEdited: expect.any(Number),
+      description: 'This is a test',
+      questions: [],
+      duration: expect.any(Number),
+      numQuestions: expect.any(Number),
+      thumbnailUrl: 'https://static.vecteezy.com/system/resources/previews/008/505/783/original/cricket-ball-illustration-png.png'
     });
   });
 });

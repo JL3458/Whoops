@@ -120,7 +120,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
 
     expect(() => adminQuizCreateQuestionRequest('', newQuiz.quizId, newQuestion)).toThrow(HTTPError[401]);
@@ -149,7 +149,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser2.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[403]);
   });
@@ -176,7 +176,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(QUESTIONID);
   });
@@ -203,7 +203,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId + 1, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -230,7 +230,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -252,7 +252,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -271,7 +271,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -309,7 +309,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -336,7 +336,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -358,7 +358,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -385,7 +385,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toEqual(QUESTIONID);
     newQuestion =
@@ -407,7 +407,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -434,7 +434,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -456,7 +456,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -483,7 +483,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -505,7 +505,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -532,7 +532,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
     newQuestion =
@@ -550,7 +550,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -577,7 +577,7 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: false
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
@@ -691,7 +691,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionMoveRequest('', 0, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[401]);
@@ -720,7 +720,7 @@ describe('Tests of adminQuizQuestionMove', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionMoveRequest(User2.token, 0, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[403]);
@@ -748,7 +748,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion.questionId + 1)).toThrow(HTTPError[400]);
@@ -776,7 +776,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const Question2 =
       {
@@ -797,7 +797,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question2);
@@ -827,7 +827,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
 
     const Question2 =
@@ -849,7 +849,7 @@ describe('Tests of adminQuizQuestionMove', () => {
         correct: true
       }
     ],
-    thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
   };
 
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
@@ -881,7 +881,7 @@ describe('Tests of adminQuizQuestionMove', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const Question2 =
   {
@@ -902,7 +902,7 @@ describe('Tests of adminQuizQuestionMove', () => {
         correct: true
       }
     ],
-    thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
   };
 
     const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
@@ -935,7 +935,7 @@ describe('Tests of adminQuizQuestionMove', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: newQuestion2.questionId,
@@ -962,7 +962,7 @@ describe('Tests of adminQuizQuestionMove', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     }]);
 
     expect(adminQuizQuestionMoveRequest(User1.token, 0, Quiz1.quizId, newQuestion2.questionId)).toEqual({});
@@ -994,7 +994,7 @@ describe('Tests of adminQuizQuestionMove', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: newQuestion1.questionId,
@@ -1021,7 +1021,7 @@ describe('Tests of adminQuizQuestionMove', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     }]);
   });
 });
@@ -1053,7 +1053,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionDuplicateRequest('', Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[401]);
@@ -1081,7 +1081,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
               correct: true
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionDuplicateRequest(User2.token, Quiz1.quizId, newQuestion.questionId)).toThrow(HTTPError[403]);
@@ -1109,7 +1109,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const newQuestion = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(() => adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion.questionId + 1)).toThrow(HTTPError[400]);
@@ -1137,7 +1137,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
             correct: true
           }
         ],
-        thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+        thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
       };
     const Question2 =
   {
@@ -1158,7 +1158,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
         correct: true
       }
     ],
-    thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+    thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
   };
 
     const newQuestion1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
@@ -1191,7 +1191,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: newQuestion2.questionId,
@@ -1218,7 +1218,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     }]);
 
     const newOutput3 = adminQuizQuestionDuplicateRequest(User1.token, Quiz1.quizId, newQuestion2.questionId);
@@ -1250,7 +1250,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: newQuestion2.questionId,
@@ -1277,7 +1277,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: newOutput3.newQuestionId,
@@ -1304,7 +1304,7 @@ describe('Tests of adminQuizQuestionDuplicate', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     }]);
   });
 });
@@ -1335,7 +1335,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
 
     // Create the initial question and get its ID
@@ -1368,7 +1368,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     // Check if question is in questions array
     expect(quizInfo.questions).toEqual([quizInfoOutput]);
@@ -1400,7 +1400,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     const newQuestion2 = {
       question: 'Sample Question 2',
@@ -1420,7 +1420,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     const newQuestion3 = {
       question: 'Sample Question 3',
@@ -1440,7 +1440,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
 
     // Create the initial question and get its ID
@@ -1477,7 +1477,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     const newQuestionOutput2 = {
       questionId: questionId2,
@@ -1504,7 +1504,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     const newQuestionOutput3 = {
       questionId: questionId3,
@@ -1531,7 +1531,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     // Confirm if questions are in questions array
     expect(quizInfo.questions).toEqual([newQuestionOutput1, newQuestionOutput2, newQuestionOutput3]);
@@ -1564,7 +1564,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     },
     {
       questionId: questionId3,
@@ -1591,7 +1591,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     }];
     expect(quizInfo.questions).toEqual(quizInfoOutput);
   });
@@ -1617,7 +1617,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
 
     // Create the initial question and get its ID
@@ -1648,7 +1648,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
 
     // Create the initial question and get its ID
@@ -1686,7 +1686,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true,
         },
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
 
     // Create the initial question and get its ID
@@ -1718,7 +1718,7 @@ describe('Tests of adminQuizQuestionDelete', () => {
           correct: true
         }
       ],
-      thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg'
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
     };
     const question1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
