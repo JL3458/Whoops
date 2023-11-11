@@ -53,13 +53,30 @@ export interface metadata {
   thumbnailUrl: string
 }
 
+export interface player {
+  playerId: number,
+  name: string,
+  score: number,
+  correctQuestionsList: number[]
+}
+
 export interface session {
   sessionId: number,
   autoStartNum: number,
   state: string,
   atQuestion: number,
-  players: string[],
+  players: player[],
   metadata: metadata
+}
+
+export enum States {
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULTS',
+  END = 'END',
 }
 
 interface DataStore {
@@ -69,6 +86,7 @@ interface DataStore {
   trash: quiz[]
   sessions: session[]
   quizIdCounter: number
+  playerIdCounter: number
   questionIdCounter: number
 }
 
@@ -79,6 +97,7 @@ let data: DataStore = {
   trash: [],
   quizIdCounter: 0,
   questionIdCounter: 0,
+  playerIdCounter: 0,
   sessions: [],
 };
 
