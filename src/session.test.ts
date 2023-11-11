@@ -345,7 +345,7 @@ describe('Tests of adminQuizGetSession', () => {
     const expectedOutput = {
       state: 'LOBBY',
       atQuestion: 0,
-      // players has not been added
+      // players has not been added so an empty array is used.
       players: expect.any(Array),
       metadata: {
         quizId: Quiz1.quizId,
