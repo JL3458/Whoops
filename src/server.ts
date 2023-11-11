@@ -34,7 +34,7 @@ import {
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
 import { adminQuizGetSession, adminSessionStart, adminViewSessions } from './session';
-import { playerJoin } from './player';
+import { playerJoin, playerStatus } from './player';
 
 // Set up web app
 const app = express();
@@ -398,6 +398,14 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
 
   const response = playerJoin(sessionId, name);
 
+  saveDataStore();
+  res.json(response);
+});
+
+// playerStatus
+app.get('/v1/player/:playerid', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const response = playerStatus(playerId);
   saveDataStore();
   res.json(response);
 });
