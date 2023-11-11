@@ -7,6 +7,11 @@ interface SessionStartReturn {
     sessionId: number
 }
 
+interface ViewSessionsReturn {
+  activeSessions: number[],
+  inactiveSessions: number[]
+}
+
 export enum States {
   LOBBY = 'LOBBY',
   QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
@@ -34,15 +39,12 @@ export function adminSessionStart(token: string, quizId: number, autoStartNum: n
     throw HTTPError(400, 'AutoStartNum is a number greater than 50');
   }
 
-  const countNotEndState = data.sessions.reduce((counter, session) => (session.state === States.END ? counter : counter + 1), 0);
-  console.log(countNotEndState);
+  // Finds all sessions of a quiz
+  const sessionsOfQuiz = data.sessions.filter((session) => session.metadata.quizId === quizId);
+
+  const countNotEndState = sessionsOfQuiz.reduce((counter, session) => (session.state === States.END ? counter : counter + 1), 0);
   if (countNotEndState === 10) {
     throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
-  }
-
-  // Checks if quizId refers to an invalid quiz
-  if (tempQuiz === undefined) {
-    throw HTTPError(403, 'Quiz does not exist');
   }
 
   if (tempQuiz.questions.length === 0) {
@@ -91,6 +93,38 @@ export function adminSessionStart(token: string, quizId: number, autoStartNum: n
   };
 }
 
+export function adminViewSessions(token: string, quizId: number): ViewSessionsReturn {
+  const data = getData();
+
+  if (checkValidToken(token)) {
+    throw HTTPError(401, 'Token is empty or invalid');
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+  }
+
+  // Finds all sessions of a quiz
+  const sessionsOfQuiz = data.sessions.filter((session) => session.metadata.quizId === quizId);
+
+  const activeSessions = sessionsOfQuiz.filter((session) => session.state !== States.END);
+  const inactiveSessions = sessionsOfQuiz.filter((session) => session.state === States.END);
+
+  const activeSessionsIds = activeSessions.map((session) => session.sessionId);
+  const inactiveSessionsIds = inactiveSessions.map((session) => session.sessionId);
+
+  // Returns active and inactive sessions
+  return {
+    activeSessions: activeSessionsIds,
+    inactiveSessions: inactiveSessionsIds
+  };
+}
+
 /// //////////////////////// Helper Functions ///////////////////////////////////
 
 function checkValidToken(token: string): boolean {
@@ -123,3 +157,33 @@ function checkValidToken(token: string): boolean {
 
   return false;
 }
+
+// const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+// const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+// const Question1 =
+//     {
+//       question: 'Sample Question 1',
+//       duration: 5,
+//       points: 4,
+//       answers: [
+//         {
+//           answer: 'Prince Wales',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Charles',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Diana',
+//           correct: true
+//         }
+//       ],
+//       thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+//     };
+// adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+
+// // Create 10 sessions that are not in END state
+// adminSessionStart(User1.token, Quiz1.quizId, 1)
+// adminSessionStart(User1.token, Quiz1.quizId, 2)
+// adminSessionStart(User1.token, Quiz1.quizId, 3)
