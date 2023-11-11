@@ -81,6 +81,9 @@ export function adminSessionStartRequest(token: string, quizid: number, autoStar
 export function adminQuizGetSessionRequest(token: string, sessionid: number, quizid: number) {
   return requestHelper('GET', `/v1/admin/quiz/${quizid}/session/${sessionid}`, {}, { token });
 }
+export function adminViewSessionsRequest(token: string, quizid: number) {
+  return requestHelper('GET', `/v1/admin/quiz/${quizid}/sessions`, {}, { token });
+}
 
 /// ////////////////////////// Main Tests /////////////////////////////
 
@@ -314,6 +317,7 @@ describe('Tests of adminQuizGetSession', () => {
           thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
         };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+
     const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 3);
     expect(() => adminQuizGetSessionRequest(User2.token, session1.sessionId, Quiz1.quizId)).toThrow(HTTPError[403]);
   });
@@ -391,5 +395,107 @@ describe('Tests of adminQuizGetSession', () => {
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 3);
     expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId)).toEqual(expectedOutput);
+  });
+});
+
+describe('Tests of adminViewSessions', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Empty or Invalid', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
+    expect(() => adminViewSessionsRequest('', Quiz1.quizId)).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
+    expect(() => adminViewSessionsRequest(User2.token, Quiz1.quizId)).toThrow(HTTPError[403]);
+  });
+
+  test('Valid View Sessions', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const session2 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const session3 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+
+    const sortedArrayActive = [session1.sessionId, session2.sessionId, session3.sessionId];
+    sortedArrayActive.sort(function(a, b) {
+      return a - b;
+    });
+
+    expect(adminViewSessionsRequest(User1.token, Quiz1.quizId)).toEqual({ activeSessions: sortedArrayActive, inactiveSessions: [] });
   });
 });
