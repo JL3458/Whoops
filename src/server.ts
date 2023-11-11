@@ -28,7 +28,8 @@ import {
   adminQuizViewTrash,
   adminQuizInfo,
   adminQuizNameUpdate,
-  adminQuizDescriptionUpdate
+  adminQuizDescriptionUpdate,
+  adminQuizThumbnailUpdate
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
@@ -267,6 +268,17 @@ app.get('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const response = adminQuizInfo(token, quizId);
+
+  saveDataStore();
+  res.json(response);
+});
+
+// adminQuizThumbnailUpdate
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const { imgUrl } = req.body;
+  const token = req.headers.token as string;
+  const quizId = parseInt(req.params.quizid);
+  const response = adminQuizThumbnailUpdate(token, quizId, imgUrl);
 
   saveDataStore();
   res.json(response);
