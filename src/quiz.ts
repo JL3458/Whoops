@@ -1,4 +1,5 @@
 import { getData, setData, question } from './dataStore';
+import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
 import { States } from './session';
 
@@ -74,7 +75,11 @@ export function checkValidToken(token: string): boolean {
   return false;
 }
 
-/// //////////////////////// Main Functions ///////////////////////////////////
+function isValidImageFileType(fileType: string): boolean {
+  return ['jpg', 'png'].includes(fileType.toLowerCase());
+}
+
+/// /////////////////////// Main Functions ///////////////////////////////////
 
 export function adminQuizList(token: string): QuizListReturn | ErrorReturn {
   const data = getData();
@@ -146,7 +151,7 @@ export function adminQuizCreate(token: string, name: string, description: string
     timeLastEdited: Math.floor(Date.now() / 1000),
     userId: tempToken.userId,
     questions: [] as question[],
-    thumbnailUrl: ''
+    thumbnailUrl: '',
   };
 
   data.quizzes.push(tempQuizStorage);
@@ -469,3 +474,59 @@ export function adminQuizTrashEmpty (token: string, quizIds: string): object | E
   }
   return {};
 }
+
+export function adminQuizThumbnailUpdate(token: string, quizId: number, imgUrl: string) {
+  const data = getData();
+
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    throw HTTPError(401, 'Token is empty or invalid');
+  }
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Checks if quizId refers to an invalid quiz
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (tempQuiz === undefined) {
+    throw HTTPError(400, 'quizId is not of a valid quiz');
+  }
+
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+  }
+
+  // Check if the imgUrl when fetched does not return a valid file - PNG/JPG
+  try {
+    const response = request('GET', imgUrl);
+    if (response.statusCode === 200) {
+      const contentType = response.headers['content-type'];
+      const fileExtension = contentType.split('/')[1];
+
+      if (!isValidImageFileType(fileExtension)) {
+        throw HTTPError(400, 'The imgUrl should be a JPG or PNG file');
+      }
+    } else {
+      throw HTTPError(400, 'imgUrl, when fetched does not return a valid file');
+    }
+  } catch (error) {
+    if (error.message.includes('The imgUrl should be a JPG or PNG file')) {
+      throw HTTPError(400, 'The imgUrl should be a JPG or PNG file');
+    } else {
+      throw HTTPError(400, 'imgUrl, when fetched does not return a valid file');
+    }
+  }
+
+  tempQuiz.thumbnailUrl = imgUrl;
+  setData(data);
+  return {};
+}
+
+// const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+// const quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+// https://s29.q4cdn.com/175625835/files/doc_downloads/test.pdf
+// console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://s29.q4cdn.com/175625835/files/doc_downloads/test.pdf'));
+// console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://upload.wikimedia.org//commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29'));
+// console.log(adminQuizInfo(User1.token, quiz1.quizId));
+// console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'));
+// console.log(adminQuizInfo(User1.token, quiz1.quizId));
