@@ -2,7 +2,6 @@ import { getData, setData, question } from './dataStore';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
 import { States } from './session';
-
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
 interface ErrorReturn {
@@ -42,6 +41,7 @@ interface QuizViewTrashReturn {
     }
   ]
 }
+
 /// //////////////////////// Helper Functions ///////////////////////////////////
 
 export function checkValidToken(token: string): boolean {
@@ -524,6 +524,31 @@ export function adminQuizThumbnailUpdate(token: string, quizId: number, imgUrl: 
 
 // const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 // const quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+// const newQuestion =
+//         {
+//           question: 'Sample Question 1',
+//           duration: 5,
+//           points: 4,
+//           answers: [
+//             {
+//               answer: 'Prince Wales',
+//               correct: true
+//             },
+//             {
+//               answer: 'Prince Charles',
+//               correct: true
+//             },
+//             {
+//               answer: 'Prince Diana',
+//               correct: true
+//             }
+//           ],
+//           thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+//         };
+// const question1 = adminQuizCreateQuestion(User1.token, quiz1.quizId, newQuestion)
+// const Session1 = adminSessionStart(User1.token, quiz1.quizId, 3)
+// console.log(adminQuizGetSession(User1.token, Session1.sessionId, quiz1.quizId))
+// console.log(getData().sessions[0].metadata.questions)
 // https://s29.q4cdn.com/175625835/files/doc_downloads/test.pdf
 // console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://s29.q4cdn.com/175625835/files/doc_downloads/test.pdf'));
 // console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://upload.wikimedia.org//commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29'));
