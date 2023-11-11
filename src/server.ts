@@ -34,6 +34,7 @@ import {
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
 import { adminQuizGetSession, adminSessionStart, adminViewSessions } from './session';
+import { playerJoin } from './player';
 
 // Set up web app
 const app = express();
@@ -377,12 +378,25 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   saveDataStore();
   res.json(response);
 });
+
 // adminViewSessions
 app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
 
   const response = adminViewSessions(token, quizId);
+
+  saveDataStore();
+  res.json(response);
+});
+
+/// ////////////////////////// player.ts ///////////////////////////////
+
+// playerJoin
+app.post('/v1/player/join', (req: Request, res: Response) => {
+  const { sessionId, name } = req.body;
+
+  const response = playerJoin(sessionId, name);
 
   saveDataStore();
   res.json(response);

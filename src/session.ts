@@ -1,4 +1,4 @@
-import { getData, setData, metadata } from './dataStore';
+import { getData, setData, States, player, metadata } from './dataStore';
 import HTTPError from 'http-errors';
 /// ////////////////////////  Interface definitions ///////////////////////////////////
 
@@ -22,6 +22,8 @@ interface ViewSessionsReturn {
   inactiveSessions: number[]
 }
 
+/*
+// Kept for reference
 export enum States {
   LOBBY = 'LOBBY',
   QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
@@ -31,6 +33,7 @@ export enum States {
   FINAL_RESULTS = 'FINAL_RESULTS',
   END = 'END',
 }
+*/
 
 /// //////////////////////// Main Functions ///////////////////////////////////
 
@@ -52,7 +55,6 @@ export function adminSessionStart(token: string, quizId: number, autoStartNum: n
 
   // Finds all sessions of a quiz
   const sessionsOfQuiz = data.sessions.filter((session) => session.metadata.quizId === quizId);
-
   const countNotEndState = sessionsOfQuiz.reduce((counter, session) => (session.state === States.END ? counter : counter + 1), 0);
   if (countNotEndState === 10) {
     throw HTTPError(400, 'A maximum of 10 sessions that are not in END state currently exist');
@@ -91,7 +93,7 @@ export function adminSessionStart(token: string, quizId: number, autoStartNum: n
     autoStartNum: autoStartNum,
     state: States.LOBBY,
     atQuestion: 0,
-    players: [] as string[],
+    players: [] as player[],
     metadata: quizMetadata
   };
 
@@ -143,10 +145,13 @@ export function adminQuizGetSession(token: string, sessionId: number, quizId: nu
     throw HTTPError(400, 'no metadata');
   }
 
+  // Mapping a new array containing the names of the players
+  const playerNames = session.players.map((player) => player.name);
+
   const returnValue: QuizGetSessionReturn = {
     state: session.state,
     atQuestion: session.atQuestion,
-    players: session.players,
+    players: playerNames,
     metadata: {
       quizId: quizMetadata.quizId,
       name: quizMetadata.name,

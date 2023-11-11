@@ -10,6 +10,7 @@ export function clear() {
     trash: [],
     quizIdCounter: 0,
     questionIdCounter: 0,
+    playerIdCounter: 0,
     sessions: []
   };
 

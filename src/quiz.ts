@@ -1,7 +1,11 @@
-import { getData, setData, question } from './dataStore';
+import { getData, setData, question, States } from './dataStore';
 import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
-import { States } from './session';
+// import {adminAuthRegister} from './auth'
+// import {adminSessionStart} from './session'
+// import {playerJoin} from './player'
+// import {adminQuizCreateQuestion} from './question'
+
 /// //////////////////////// Functions Return Interface ///////////////////////////////////
 
 interface ErrorReturn {
@@ -521,6 +525,37 @@ export function adminQuizThumbnailUpdate(token: string, quizId: number, imgUrl: 
   setData(data);
   return {};
 }
+
+/*
+const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+const Question1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
+console.log(playerJoin(Session1.sessionId, 'Hayden'));
+console.log(playerJoin(Session1.sessionId, 'Micheal'));
+console.log(getData().sessions[0].players);
+*/
 
 // const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 // const quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
