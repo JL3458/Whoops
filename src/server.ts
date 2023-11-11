@@ -33,7 +33,7 @@ import {
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
-import { adminSessionStart } from './session';
+import { adminSessionStart, adminViewSessions } from './session';
 
 // Set up web app
 const app = express();
@@ -354,12 +354,24 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 
 /// ////////////////////////// session.ts ///////////////////////////////
 
+// adminSessionStart
 app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const token = req.headers.token as string;
   const { autoStartNum } = req.body;
 
   const response = adminSessionStart(token, quizId, autoStartNum);
+
+  saveDataStore();
+  res.json(response);
+});
+
+// adminViewSessions
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.headers.token as string;
+
+  const response = adminViewSessions(token, quizId);
 
   saveDataStore();
   res.json(response);
