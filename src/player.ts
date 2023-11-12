@@ -1,5 +1,9 @@
 import { getData, setData, States } from './dataStore';
 import HTTPError from 'http-errors';
+// import { adminAuthRegister } from './auth';
+// import { adminQuizCreate } from './quiz';
+// import { adminQuizCreateQuestion } from './question';
+// import { adminSessionStart, adminUpdateSessionState } from './session';
 
 /// ////////////////////////  Interface definitions /////////////////////////////
 
@@ -128,7 +132,7 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
 
   // Get the current question information
   const currentQuestion = session.metadata.questions[questionPosition - 1];
-
+  setData(data)
   // Build the response object
   const response = {
     questionId: currentQuestion.questionId,
@@ -162,7 +166,7 @@ export function playerStatus(playerId: number): playerStatusReturn | ErrorReturn
   };
 }
 
-export function playerAnswerSubmission(playerId: number, questionPosition: number, answerId: number) {
+export function playerAnswerSubmission(playerId: number, questionPosition: number, answerIds: number[]) {
   const data = getData();
 
   // Find the session the player is in
@@ -170,7 +174,7 @@ export function playerAnswerSubmission(playerId: number, questionPosition: numbe
 
   // Check if the session exists
   if (!session) {
-    throw HTTPError(400, 'Player ID does not exist');
+    throw HTTPError(400, 'Session does not exist');
   }
 
   // Check if the session is in the correct state for answering questions
@@ -192,35 +196,37 @@ export function playerAnswerSubmission(playerId: number, questionPosition: numbe
 
   // Check if the provided answerId is valid for this question
   const validAnswerIds = currentQuestion.answers.map((answer) => answer.answerId);
+  const invalidAnswerIds = answerIds.filter((answerId) => !validAnswerIds.includes(answerId));
 
-  if (!validAnswerIds.includes(answerId)) {
-    throw HTTPError(400, 'Invalid answer ID provided');
+  if (invalidAnswerIds.length > 0 || answerIds.length < 1) {
+    throw HTTPError(400, 'Invalid answer IDs provided');
   }
 
   // Find the player and update the player's most recent answer for this question
-  const player = session.players.find((player) => player.playerId === playerId);
+  const player = session.players.find((p) => p.playerId === playerId);
 
-  if (player) {
-    // Remove the previous answerId for this question
+  if (!player) {
+    throw HTTPError(400, 'PlayerId does not exist');
+  }
+
+  answerIds.forEach((answerId) => {
     const previousAnswerIndex = player.correctQuestionsList.findIndex((entry) => entry === answerId);
+
     if (previousAnswerIndex !== -1) {
-      player.score = player.score - currentQuestion.points;
+      player.score -= currentQuestion.points;
       player.correctQuestionsList.splice(previousAnswerIndex, 1);
     }
-    
-    const chosenAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
-    // Add the most recent answerId for this question
-    if (chosenAnswer.correct === true) {
+
+    const selectedAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
+
+    if (selectedAnswer && selectedAnswer.correct) {
+      player.score += currentQuestion.points;
       player.correctQuestionsList.push(answerId);
-      player.score = player.score + currentQuestion.points;
     }
-  }
-  console.log('IT RANNN');
-  console.log('IT RANNN');
-  console.log('IT RANNN');
-  console.log('IT RANNN');
-  console.log('IT RANNN');
-  return {}
+  });
+
+  setData(data);
+  return {};
 }
 
 /*
@@ -249,7 +255,9 @@ const Question1 =
     };
 adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
 const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
-console.log(playerJoin(Session1.sessionId, 'Hayden'));
-console.log(playerStatus(1));
-console.log(getData());
+const Player1 = playerJoin(Session1.sessionId, 'Shervin');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+console.log(playerAnswerSubmission(Player1.playerId, 1, [2]))
+
 */

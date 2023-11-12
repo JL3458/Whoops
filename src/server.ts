@@ -438,9 +438,9 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
 app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
   const playerId = parseInt(req.params.playerid);
   const questionPosition = parseInt(req.params.questionposition);
-  const answerId = req.body;
+  const { answerIds } = req.body;
 
-  const response = playerAnswerSubmission(playerId, questionPosition, answerId);
+  const response = playerAnswerSubmission(playerId, questionPosition, answerIds);
 
   saveDataStore();
   res.json(response);

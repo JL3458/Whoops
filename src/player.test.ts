@@ -86,8 +86,8 @@ export function playerStatusRequest(playerid: number) {
   return requestHelper('GET', `/v1/player/${playerid}`, {}, {});
 }
 
-export function playerAnswerSubmissionRequest(playerid: number, questionposition: number, answerid: number) {
-  return requestHelper('PUT', `/v1/player/${playerid}/question/${questionposition}/answer`, {answerid}, {});
+export function playerAnswerSubmissionRequest(playerid: number, questionposition: number, answerids: number[]) {
+  return requestHelper('PUT', `/v1/player/${playerid}/question/${questionposition}/answer`, { answerids }, {});
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -490,6 +490,6 @@ describe.only('Tests for playerAnswerSubmission', () => {
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
-    expect(playerAnswerSubmissionRequest(Player1.playerId, 1, 2)).toEqual({});
+    expect(playerAnswerSubmissionRequest(Player1.playerId, 1, [2])).toEqual({});
   });
 });
