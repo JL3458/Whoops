@@ -11,6 +11,7 @@ import { IncomingHttpHeaders } from 'http';
 import HTTPError from 'http-errors';
 import { adminQuizCreateQuestionRequest } from './question.test';
 import { adminSessionStartRequest } from './session.test';
+import { Session } from 'inspector';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 10000;
@@ -77,6 +78,10 @@ const requestHelper = (
 
 export function playerJoinRequest(sessionId: number, name: string) {
   return requestHelper('POST', '/v1/player/join', { sessionId, name }, { });
+}
+
+export function playerCurrentQuestionInfoRequest(playerid: number, questionposition: number) {
+  return requestHelper('GET', `/v1/player/${playerid}/question/${questionposition}`, {}, {});
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -208,4 +213,56 @@ describe('Tests for playerJoin', () => {
     const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
     expect(playerJoinRequest(Session1.sessionId, 'Hayden')).toEqual({ playerId: expect.any(Number) });
   });
+});
+
+describe.only('Tests for playerCurrentQuestionInfo', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Get current question info successfully', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    const Question2 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    Session1.atQuestion = Question2.questionPosition;
+    expect(playerCurrentQuestionInfoRequest(Player1.playerId, Question2.questionPosition)).toEqual({
+      questionId: Question2.questionId,
+      question: Question2.question,
+      duration: Question2.duration,
+      thumbnailUrl: Question2.thumbnailUrl,
+      points: Question2.points,
+      answers: [
+        {
+          answerId: Question2.answerId,
+          answer: Question2.answer,
+          colour: Question2.colour
+        }
+      ]
+    })
+  });
+
+  // Add more test cases for different scenarios
 });
