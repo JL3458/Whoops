@@ -33,7 +33,7 @@ import {
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
-import { adminQuizGetSession, adminSessionStart, adminViewSessions } from './session';
+import { adminQuizGetSession, adminSessionStart, adminUpdateSessionState, adminViewSessions } from './session';
 import { playerJoin, playerStatus } from './player';
 
 // Set up web app
@@ -355,6 +355,17 @@ app.post('/v2/admin/quiz/:quizid/question/:questionid/duplicate', (req: Request,
 
 /// ////////////////////////// session.ts ///////////////////////////////
 
+// adminViewSessions
+app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const token = req.headers.token as string;
+
+  const response = adminViewSessions(token, quizId);
+
+  saveDataStore();
+  res.json(response);
+});
+
 // adminSessionStart
 app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -367,6 +378,19 @@ app.post('/v1/admin/quiz/:quizid/session/start', (req: Request, res: Response) =
   res.json(response);
 });
 
+// adminUpdateSessionState
+app.put('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+  const { action } = req.body;
+
+  const response = adminUpdateSessionState(token, quizId, sessionId, action);
+
+  saveDataStore();
+  res.json(response);
+});
+
 // adminGetSessions
 app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
@@ -374,17 +398,6 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   const token = req.headers.token as string;
 
   const response = adminQuizGetSession(token, sessionId, quizId);
-
-  saveDataStore();
-  res.json(response);
-});
-
-// adminViewSessions
-app.get('/v1/admin/quiz/:quizid/sessions', (req: Request, res: Response) => {
-  const quizId = parseInt(req.params.quizid);
-  const token = req.headers.token as string;
-
-  const response = adminViewSessions(token, quizId);
 
   saveDataStore();
   res.json(response);
