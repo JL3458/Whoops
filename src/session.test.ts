@@ -74,15 +74,20 @@ const requestHelper = (
 
 /// /////////////////////// Server Functions ///////////////////////////
 
+export function adminViewSessionsRequest(token: string, quizid: number) {
+  return requestHelper('GET', `/v1/admin/quiz/${quizid}/sessions`, {}, { token });
+}
+
 export function adminSessionStartRequest(token: string, quizid: number, autoStartNum: number) {
   return requestHelper('POST', `/v1/admin/quiz/${quizid}/session/start`, { autoStartNum }, { token });
 }
 
+export function adminUpdateSessionStateRequest(token: string, quizid: number, sessionid: number, action: string) {
+  return requestHelper('PUT', `/v1/admin/quiz/${quizid}/session/${sessionid}`, { action }, { token });
+}
+
 export function adminQuizGetSessionRequest(token: string, sessionid: number, quizid: number) {
   return requestHelper('GET', `/v1/admin/quiz/${quizid}/session/${sessionid}`, {}, { token });
-}
-export function adminViewSessionsRequest(token: string, quizid: number) {
-  return requestHelper('GET', `/v1/admin/quiz/${quizid}/sessions`, {}, { token });
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -292,6 +297,7 @@ describe('Tests of adminQuizGetSession', () => {
     const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 3);
     expect(() => adminQuizGetSessionRequest('', session1.sessionId, Quiz1.quizId)).toThrow(HTTPError[401]);
   });
+
   test('Valid token is provided, but user is not an owner of this quiz', () => {
     const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
     const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
@@ -491,12 +497,469 @@ describe('Tests of adminViewSessions', () => {
     const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
     const session2 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
     const session3 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const session4 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const session5 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const session6 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
 
-    const sortedArrayActive = [session1.sessionId, session2.sessionId, session3.sessionId];
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session2.sessionId, 'END')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session4.sessionId, 'END')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session6.sessionId, 'END')).toEqual({});
+
+    const sortedArrayActive = [session1.sessionId, session3.sessionId, session5.sessionId];
+    sortedArrayActive.sort(function(a, b) {
+      return a - b;
+    });
+    const sortedArrayInactive = [session2.sessionId, session4.sessionId, session6.sessionId];
     sortedArrayActive.sort(function(a, b) {
       return a - b;
     });
 
-    expect(adminViewSessionsRequest(User1.token, Quiz1.quizId)).toEqual({ activeSessions: sortedArrayActive, inactiveSessions: [] });
+    expect(adminViewSessionsRequest(User1.token, Quiz1.quizId)).toEqual({ activeSessions: sortedArrayActive, inactiveSessions: sortedArrayInactive });
+  });
+});
+
+describe('Tests of adminUpdateSessionState', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Empty or Invalid', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(() => adminUpdateSessionStateRequest('', Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[401]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const User2 = authRegisterRequest('Valid1email@gmail.com', 'password123', 'Steph', 'Curry');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(() => adminUpdateSessionStateRequest(User2.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[403]);
+  });
+
+  test('Session Id does not refer to a valid session within this quiz', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId + 1, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Action Enum', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'INVALID_ACTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in LOBBY state', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in END state', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'END')).toEqual({});
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in QUESTION_COUNTDOWN state', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect((adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION'))).toEqual({});
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in QUESTION_OPEN state', async () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+
+    await new Promise((resolve) => setTimeout(resolve, 3500));
+
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_OPEN');
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in QUESTION_CLOSE state', async () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 2,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toEqual({});
+
+    // Waiting till question duration elapses
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_CLOSE');
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in ANSWER_SHOW state', async () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 2,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toEqual({});
+
+    // Waiting till question duration elapses
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_CLOSE');
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toEqual({});
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+  });
+
+  test('Invalid Actions in FINAL_RESULTS state', async () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 2,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_OPEN');
+
+    // Waiting till question duration elapses
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_CLOSE');
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toEqual({});
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toThrow(HTTPError[400]);
+    expect(() => adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toThrow(HTTPError[400]);
+  });
+
+  test('Succesful SKIP_COUNTDOWN', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 2,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toEqual({});
+
+    // Skipped 3 seconds and opened question
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_OPEN');
+  });
+
+  test('Valid Actions', async () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Max', 'Verstappen');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+        {
+          question: 'Sample Question 1',
+          duration: 2,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'NEXT_QUESTION')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_COUNTDOWN');
+
+    // Skipping countdown
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'SKIP_COUNTDOWN')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('QUESTION_OPEN');
+
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_ANSWER')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('ANSWER_SHOW');
+
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'GO_TO_FINAL_RESULTS')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('FINAL_RESULTS');
+
+    expect(adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, session1.sessionId, 'END')).toEqual({});
+    expect(adminQuizGetSessionRequest(User1.token, session1.sessionId, Quiz1.quizId).state).toEqual('END');
   });
 });

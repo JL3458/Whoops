@@ -3,6 +3,20 @@ import HTTPError from 'http-errors';
 
 /// ////////////////////////  Interface definitions /////////////////////////////
 
+interface playerStatusReturn {
+  state: string,
+  atQuestion: number,
+  numQuestions: number
+}
+
+interface playerJoinReturn {
+  playerId: number
+}
+
+interface ErrorReturn {
+  error: string;
+}
+
 /// //////////////////////// Helper Functions ///////////////////////////////////
 
 export function generateRandomName(): string {
@@ -41,7 +55,7 @@ export function generateRandomName(): string {
 
 /// //////////////////////// Main Functions ///////////////////////////////////
 
-export function playerJoin(sessionId: number, name: string) {
+export function playerJoin(sessionId: number, name: string): playerJoinReturn | ErrorReturn {
   const data = getData();
 
   // find the current session correspsonding to the correct sessionId
@@ -85,11 +99,7 @@ export function playerJoin(sessionId: number, name: string) {
 
 export function playerCurrentQuestionInfo(playerId: number, questionPosition: number) {
   const data = getData();
-  console.log("RUNNING");
-  console.log("RUNNING");
-  console.log("RUNNING");
-  console.log("RUNNING");
-  console.log("RUNNING");
+
   // Find the player corresponding to the given playerId
   const player = data.sessions
     .flatMap((session) => session.players)
@@ -107,7 +117,7 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
     throw HTTPError(400, 'Invalid question position for the session this player is in');
   }
 
-   // Check if the session is not in LOBBY or END state
+  // Check if the session is not in LOBBY or END state
   if (session.state === States.LOBBY || session.state === States.END) {
     throw HTTPError(400, 'Session is in LOBBY or END state');
   }
@@ -115,8 +125,6 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
   if (session.atQuestion !== questionPosition) {
     throw HTTPError(400, 'Session is not currently on this question');
   }
-
- 
 
   // Get the current question information
   const currentQuestion = session.metadata.questions[questionPosition - 1];
@@ -137,6 +145,23 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
 
   return response;
 }
+
+export function playerStatus(playerId: number): playerStatusReturn | ErrorReturn {
+  const data = getData();
+
+  // Check if Player ID does not exists or not
+  const tempSession = data.sessions.find((session) => session.players.find((player) => player.playerId === playerId));
+  if (tempSession === undefined) {
+    throw HTTPError(400, 'Player ID does not exist');
+  }
+
+  return {
+    state: tempSession.state,
+    numQuestions: tempSession.metadata.numQuestions,
+    atQuestion: tempSession.atQuestion
+  };
+}
+
 /*
 const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
@@ -164,5 +189,6 @@ const Question1 =
 adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
 const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
 console.log(playerJoin(Session1.sessionId, 'Hayden'));
+console.log(playerStatus(1));
 console.log(getData());
 */
