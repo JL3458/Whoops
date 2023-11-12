@@ -162,6 +162,67 @@ export function playerStatus(playerId: number): playerStatusReturn | ErrorReturn
   };
 }
 
+export function playerAnswerSubmission(playerId: number, questionPosition: number, answerId: number) {
+  const data = getData();
+
+  // Find the session the player is in
+  const session = data.sessions.find((session) => session.players.find((player) => player.playerId === playerId));
+
+  // Check if the session exists
+  if (!session) {
+    throw HTTPError(400, 'Player ID does not exist');
+  }
+
+  // Check if the session is in the correct state for answering questions
+  if (session.state !== States.QUESTION_OPEN) {
+    throw HTTPError(400, 'Session is not in QUESTION_OPEN state');
+  }
+
+  // Check if the session is up to the specified question
+  if (session.atQuestion < questionPosition) {
+    throw HTTPError(400, 'Session is not yet up to this question');
+  }
+
+  if (session.atQuestion > questionPosition) {
+    throw HTTPError(400, 'Session is past this question');
+  }
+
+  // Find the current question
+  const currentQuestion = session.metadata.questions[questionPosition - 1];
+
+  // Check if the provided answerId is valid for this question
+  const validAnswerIds = currentQuestion.answers.map((answer) => answer.answerId);
+
+  if (!validAnswerIds.includes(answerId)) {
+    throw HTTPError(400, 'Invalid answer ID provided');
+  }
+
+  // Find the player and update the player's most recent answer for this question
+  const player = session.players.find((player) => player.playerId === playerId);
+
+  if (player) {
+    // Remove the previous answerId for this question
+    const previousAnswerIndex = player.correctQuestionsList.findIndex((entry) => entry === answerId);
+    if (previousAnswerIndex !== -1) {
+      player.score = player.score - currentQuestion.points;
+      player.correctQuestionsList.splice(previousAnswerIndex, 1);
+    }
+    
+    const chosenAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
+    // Add the most recent answerId for this question
+    if (chosenAnswer.correct === true) {
+      player.correctQuestionsList.push(answerId);
+      player.score = player.score + currentQuestion.points;
+    }
+  }
+  console.log('IT RANNN');
+  console.log('IT RANNN');
+  console.log('IT RANNN');
+  console.log('IT RANNN');
+  console.log('IT RANNN');
+  return {}
+}
+
 /*
 const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');

@@ -35,7 +35,7 @@ import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpda
 import { setData, getData } from './dataStore';
 
 import { adminQuizGetSession, adminSessionStart, adminUpdateSessionState, adminViewSessions } from './session';
-import { playerJoin, playerStatus, playerCurrentQuestionInfo } from './player';
+import { playerJoin, playerStatus, playerCurrentQuestionInfo, playerAnswerSubmission } from './player';
 
 // Set up web app
 const app = express();
@@ -434,6 +434,17 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   saveDataStore();
   res.json(response);
 });
+
+app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  const answerId = req.body;
+
+  const response = playerAnswerSubmission(playerId, questionPosition, answerId);
+
+  saveDataStore();
+  res.json(response);
+})
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
