@@ -66,7 +66,7 @@ export interface session {
   state: string,
   atQuestion: number,
   players: player[],
-  metadata: metadata
+  metadata: metadata,
 }
 
 export enum States {
@@ -98,7 +98,7 @@ let data: DataStore = {
   quizIdCounter: 0,
   questionIdCounter: 0,
   playerIdCounter: 0,
-  sessions: [],
+  sessions: []
 };
 
 // Use get() to access the data
