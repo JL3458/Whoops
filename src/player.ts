@@ -97,6 +97,55 @@ export function playerJoin(sessionId: number, name: string): playerJoinReturn | 
   };
 }
 
+export function playerCurrentQuestionInfo(playerId: number, questionPosition: number) {
+  const data = getData();
+
+  // Find the player corresponding to the given playerId
+  const player = data.sessions
+    .flatMap((session) => session.players)
+    .find((player) => player.playerId === playerId);
+
+  // Check if the player exists
+  if (!player) {
+    throw HTTPError(400, 'Player ID does not exist');
+  }
+
+  // Check if the question position is valid for the session
+  const session = data.sessions.find((session) => session.players.includes(player));
+
+  if (!session || questionPosition < 1 || questionPosition > session.metadata.numQuestions) {
+    throw HTTPError(400, 'Invalid question position for the session this player is in');
+  }
+
+  // Check if the session is not in LOBBY or END state
+  if (session.state === States.LOBBY || session.state === States.END) {
+    throw HTTPError(400, 'Session is in LOBBY or END state');
+  }
+  // Check if the session is currently on this question
+  if (session.atQuestion !== questionPosition) {
+    throw HTTPError(400, 'Session is not currently on this question');
+  }
+
+  // Get the current question information
+  const currentQuestion = session.metadata.questions[questionPosition - 1];
+
+  // Build the response object
+  const response = {
+    questionId: currentQuestion.questionId,
+    question: currentQuestion.question,
+    duration: currentQuestion.duration,
+    thumbnailUrl: currentQuestion.thumbnailUrl,
+    points: currentQuestion.points,
+    answers: currentQuestion.answers.map((answer) => ({
+      answerId: answer.answerId,
+      answer: answer.answer,
+      colour: answer.colour,
+    })),
+  };
+
+  return response;
+}
+
 export function playerStatus(playerId: number): playerStatusReturn | ErrorReturn {
   const data = getData();
 

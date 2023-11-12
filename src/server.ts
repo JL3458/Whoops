@@ -33,8 +33,9 @@ import {
 } from './quiz';
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
+
 import { adminQuizGetSession, adminSessionStart, adminUpdateSessionState, adminViewSessions } from './session';
-import { playerJoin, playerStatus } from './player';
+import { playerJoin, playerStatus, playerCurrentQuestionInfo } from './player';
 
 // Set up web app
 const app = express();
@@ -410,6 +411,17 @@ app.post('/v1/player/join', (req: Request, res: Response) => {
   const { sessionId, name } = req.body;
 
   const response = playerJoin(sessionId, name);
+
+  saveDataStore();
+  res.json(response);
+});
+
+// playerCurrentQuestionInfo
+app.get('/v1/player/:playerid/question/:questionposition', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+
+  const response = playerCurrentQuestionInfo(playerId, questionPosition);
 
   saveDataStore();
   res.json(response);
