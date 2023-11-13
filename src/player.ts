@@ -1,5 +1,9 @@
 import { getData, setData, States } from './dataStore';
 import HTTPError from 'http-errors';
+// import { adminAuthRegister } from './auth';
+// import { adminQuizCreate } from './quiz';
+// import { adminQuizCreateQuestion } from './question';
+// import { adminSessionStart, adminUpdateSessionState } from './session';
 
 /// ////////////////////////  Interface definitions /////////////////////////////
 
@@ -128,7 +132,7 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
 
   // Get the current question information
   const currentQuestion = session.metadata.questions[questionPosition - 1];
-
+  setData(data);
   // Build the response object
   const response = {
     questionId: currentQuestion.questionId,
@@ -162,6 +166,73 @@ export function playerStatus(playerId: number): playerStatusReturn | ErrorReturn
   };
 }
 
+export function playerAnswerSubmission(playerId: number, questionPosition: number, answerIds: number[]) {
+  const data = getData();
+
+  // Find the session the player is in
+  const session = data.sessions.find((session) => session.players.find((player) => player.playerId === playerId));
+
+  // Check if the session exists
+  if (!session) {
+    throw HTTPError(400, 'Session does not exist');
+  }
+
+  // Check if the session is in the correct state for answering questions
+  if (session.state !== States.QUESTION_OPEN) {
+    throw HTTPError(400, 'Session is not in QUESTION_OPEN state');
+  }
+
+  // Check if the session is up to the specified question
+  if (session.atQuestion < questionPosition) {
+    throw HTTPError(400, 'Session is not yet up to this question');
+  }
+
+  if (session.atQuestion > questionPosition) {
+    throw HTTPError(400, 'Session is past this question');
+  }
+
+  // Find the current question
+  const currentQuestion = session.metadata.questions[questionPosition - 1];
+
+  // Check if the provided answerId is valid for this question
+  const validAnswerIds = currentQuestion.answers.map((answer) => answer.answerId);
+  const invalidAnswerIds = answerIds.filter((answerId) => !validAnswerIds.includes(answerId));
+
+  if (invalidAnswerIds.length > 0 || answerIds.length < 1) {
+    throw HTTPError(400, 'Invalid answer IDs provided');
+  }
+
+  if (new Set(answerIds).size !== answerIds.length) {
+    throw HTTPError(400, 'Duplicate answer IDs provided');
+  }
+
+  // Find the player and update the player's most recent answer for this question
+  const player = session.players.find((p) => p.playerId === playerId);
+
+  if (!player) {
+    throw HTTPError(400, 'PlayerId does not exist');
+  }
+
+  answerIds.forEach((answerId) => {
+    const previousAnswerIndex = player.correctQuestionsList.findIndex((entry) => entry === questionPosition);
+
+    const selectedAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
+
+    if (previousAnswerIndex !== -1) {
+      player.score -= currentQuestion.points;
+      player.correctQuestionsList.splice(previousAnswerIndex, 1);
+    }
+
+    if (selectedAnswer && selectedAnswer.correct) {
+      player.score += currentQuestion.points;
+      player.correctQuestionsList.push(questionPosition);
+    }
+  });
+
+  setData(data);
+  return {};
+}
+
 /*
 const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
@@ -188,7 +259,10 @@ const Question1 =
     };
 adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
 const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
-console.log(playerJoin(Session1.sessionId, 'Hayden'));
-console.log(playerStatus(1));
-console.log(getData());
+const Player1 = playerJoin(Session1.sessionId, 'Shervin');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+console.log(playerAnswerSubmission(Player1.playerId, 1, [1,2]))
+console.log(playerAnswerSubmission(Player1.playerId, 1, [2,3]))
+console.log(playerAnswerSubmission(Player1.playerId, 1, [4]))
 */
