@@ -456,7 +456,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
   });
 });
 
-describe.only('Tests for playerAnswerSubmission', () => {
+describe('Tests for playerAnswerSubmission', () => {
   beforeEach(() => {
     clearRequest();
   });
