@@ -132,7 +132,7 @@ export function playerCurrentQuestionInfo(playerId: number, questionPosition: nu
 
   // Get the current question information
   const currentQuestion = session.metadata.questions[questionPosition - 1];
-  setData(data)
+  setData(data);
   // Build the response object
   const response = {
     questionId: currentQuestion.questionId,
@@ -202,6 +202,10 @@ export function playerAnswerSubmission(playerId: number, questionPosition: numbe
     throw HTTPError(400, 'Invalid answer IDs provided');
   }
 
+  if (new Set(answerIds).size !== answerIds.length) {
+    throw HTTPError(400, 'Duplicate answer IDs provided');
+  }
+
   // Find the player and update the player's most recent answer for this question
   const player = session.players.find((p) => p.playerId === playerId);
 
@@ -210,18 +214,18 @@ export function playerAnswerSubmission(playerId: number, questionPosition: numbe
   }
 
   answerIds.forEach((answerId) => {
-    const previousAnswerIndex = player.correctQuestionsList.findIndex((entry) => entry === answerId);
+    const previousAnswerIndex = player.correctQuestionsList.findIndex((entry) => entry === questionPosition);
+
+    const selectedAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
 
     if (previousAnswerIndex !== -1) {
       player.score -= currentQuestion.points;
       player.correctQuestionsList.splice(previousAnswerIndex, 1);
     }
 
-    const selectedAnswer = currentQuestion.answers.find((answer) => answer.answerId === answerId);
-
     if (selectedAnswer && selectedAnswer.correct) {
       player.score += currentQuestion.points;
-      player.correctQuestionsList.push(answerId);
+      player.correctQuestionsList.push(questionPosition);
     }
   });
 
@@ -258,6 +262,7 @@ const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
 const Player1 = playerJoin(Session1.sessionId, 'Shervin');
 adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
 adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
-console.log(playerAnswerSubmission(Player1.playerId, 1, [2]))
-
+console.log(playerAnswerSubmission(Player1.playerId, 1, [1,2]))
+console.log(playerAnswerSubmission(Player1.playerId, 1, [2,3]))
+console.log(playerAnswerSubmission(Player1.playerId, 1, [4]))
 */

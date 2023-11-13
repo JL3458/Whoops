@@ -406,6 +406,18 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
 
 /// ////////////////////////// player.ts ///////////////////////////////
 
+// playerAnswerSubmission
+app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerid);
+  const questionPosition = parseInt(req.params.questionposition);
+  const answerIds = req.body.answerIds || [];
+
+  const response = playerAnswerSubmission(playerId, questionPosition, answerIds);
+
+  saveDataStore();
+  res.json(response);
+});
+
 // playerJoin
 app.post('/v1/player/join', (req: Request, res: Response) => {
   const { sessionId, name } = req.body;
@@ -434,17 +446,6 @@ app.get('/v1/player/:playerid', (req: Request, res: Response) => {
   saveDataStore();
   res.json(response);
 });
-
-app.put('/v1/player/:playerid/question/:questionposition/answer', (req: Request, res: Response) => {
-  const playerId = parseInt(req.params.playerid);
-  const questionPosition = parseInt(req.params.questionposition);
-  const answerIds = req.body.answerIds || [];
-
-  const response = playerAnswerSubmission(playerId, questionPosition, answerIds);
-
-  saveDataStore();
-  res.json(response);
-})
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
