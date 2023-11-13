@@ -79,6 +79,13 @@ export enum States {
   END = 'END',
 }
 
+// export interface QuestionReults {
+//   questionId: number,
+//   playersCorrectList: string[],
+//   averageAnswerTime: number,
+//   percentCorrect: number
+// }
+
 interface DataStore {
   users: user[]
   quizzes: quiz[]

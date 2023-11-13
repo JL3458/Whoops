@@ -82,12 +82,17 @@ export function playerJoinRequest(sessionId: number, name: string) {
 export function playerCurrentQuestionInfoRequest(playerid: number, questionposition: number) {
   return requestHelper('GET', `/v1/player/${playerid}/question/${questionposition}`, {}, {});
 }
+
 export function playerStatusRequest(playerid: number) {
   return requestHelper('GET', `/v1/player/${playerid}`, {}, {});
 }
 
 export function playerAnswerSubmissionRequest(playerid: number, questionposition: number, answerIds: number[]) {
   return requestHelper('PUT', `/v1/player/${playerid}/question/${questionposition}/answer`, { answerIds }, {});
+}
+
+export function playerQuestionResultRequest(playerid: number, questionposition: number) {
+  return requestHelper('GET', `/v1/player/${playerid}/question/${questionposition}/results`, {}, {});
 }
 
 /// ////////////////////////// Main Tests /////////////////////////////
@@ -717,5 +722,186 @@ describe('Tests for playerAnswerSubmission', () => {
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
     expect(() => playerAnswerSubmissionRequest(Player1.playerId, 1, [])).toThrow(HTTPError[400]);
+  });
+});
+
+describe('Tests for playerQuestionResult', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Get results successfully', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+    playerAnswerSubmissionRequest(Player1.playerId, 1, [2]);
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+    expect(playerQuestionResultRequest(Player1.playerId, 1)).toEqual({
+      questionId: expect.any(Number),
+      playersCorrectList: expect.any(Array),
+      averageAnswerTime: expect.any(Number),
+      percentCorrect: expect.any(Number)
+    });
+  });
+
+  test('Invalid PlayerId', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+    playerAnswerSubmissionRequest(Player1.playerId, 1, [2]);
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+    expect(() => playerQuestionResultRequest(Player1.playerId + 1, 1)).toThrow(HTTPError[400]);
+  });
+
+  test('Wrong QuestionPosition', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+    playerAnswerSubmissionRequest(Player1.playerId, 1, [2]);
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+    expect(() => playerQuestionResultRequest(Player1.playerId, 2)).toThrow(HTTPError[400]);
+  });
+
+  test('Wrong State', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+    playerAnswerSubmissionRequest(Player1.playerId, 1, [2]);
+    expect(() => playerQuestionResultRequest(Player1.playerId, 1)).toThrow(HTTPError[400]);
+  });
+
+  test('Not at Question Yet', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+    playerAnswerSubmissionRequest(Player1.playerId, 1, [2]);
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+    expect(() => playerQuestionResultRequest(Player1.playerId, 2)).toThrow(HTTPError[400]);
   });
 });
