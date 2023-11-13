@@ -233,6 +233,66 @@ export function playerAnswerSubmission(playerId: number, questionPosition: numbe
   return {};
 }
 
+export function playerQuestionResult(playerId: number, questionPosition: number) {
+  const data = getData();
+
+  // Find the player corresponding to the given playerId
+  const player = data.sessions
+    .flatMap((session) => session.players)
+    .find((player) => player.playerId === playerId);
+
+  // Check if the player exists
+  if (!player) {
+    throw HTTPError(400, 'Player ID does not exist');
+  }
+
+  // Find the session the player is in
+  const session = data.sessions.find((session) => session.players.includes(player));
+
+  // Check if the session exists
+  if (!session) {
+    throw HTTPError(400, 'Session does not exist');
+  }
+
+  // Check if the question position is valid for the session
+  if (!session.metadata.questions[questionPosition - 1] || questionPosition < 1 || questionPosition > session.metadata.numQuestions) {
+    throw HTTPError(400, 'Invalid question position for the session this player is in');
+  }
+
+  // Check if the session is in the ANSWER_SHOW state
+  if (session.state !== States.ANSWER_SHOW) {
+    throw HTTPError(400, 'Session is not in ANSWER_SHOW state');
+  }
+
+  // Check if the session is up to the specified question
+  if (session.atQuestion < questionPosition) {
+    throw HTTPError(400, 'Session is not yet up to this question');
+  }
+
+  if (session.atQuestion > questionPosition) {
+    throw HTTPError(400, 'Session is past this question');
+  }
+
+  // Find the current question
+  const currentQuestion = session.metadata.questions[questionPosition - 1];
+
+  // Calculate average answer time and percent correct for the question
+  const playersForQuestion = session.players.filter((p) => p.correctQuestionsList.includes(questionPosition));
+  const totalAnswerTime = playersForQuestion.reduce((sum, p) => sum + p.correctQuestionsList.indexOf(questionPosition), 0);
+  const averageAnswerTime = totalAnswerTime / playersForQuestion.length;
+  const percentCorrect = (playersForQuestion.length / session.players.length) * 100;
+
+  setData(data);
+  const result = {
+    questionId: currentQuestion.questionId,
+    playersCorrectList: playersForQuestion.map((p) => p.name),
+    averageAnswerTime,
+    percentCorrect,
+  };
+
+  return result;
+}
+
 /*
 const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
 const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
