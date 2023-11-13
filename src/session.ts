@@ -1,6 +1,9 @@
 import { getData, setData, States, player, metadata, session } from './dataStore';
 import HTTPError from 'http-errors';
-
+import {adminAuthRegister} from './auth'
+import {playerJoin, playerStatus, playerAnswerSubmission} from './player'
+import {adminQuizCreateQuestion} from './question'
+import {adminQuizCreate} from './quiz'
 /// ////////////////////////  Interface definitions ///////////////////////////////////
 
 interface SessionStartReturn {
@@ -26,6 +29,23 @@ interface ViewSessionsReturn {
 export interface scheduledCountdown {
   sessionId: number,
   currentCountdown: ReturnType<typeof setTimeout>
+}
+
+export interface QuizGetResultsReturn {
+  usersRankedByScore: [
+    {
+      name: string,
+      score: number,
+    }
+  ],
+  questionResults: [
+    {
+      questionId: number,
+      playersCorrectList: string[],
+      averageAnswerTime: number,
+      percentCorrect: number,
+    }
+  ]
 }
 
 // Global array to store all the Timeout Objects
@@ -299,6 +319,95 @@ export function adminQuizGetSession(token: string, sessionId: number, quizId: nu
   return returnValue;
 }
 
+export function adminQuizGetResults(token: string, sessionId: number, quizId: number): QuizGetResultsReturn | ErrorReturn {
+  const data = getData();
+  // Calling helper function which tests for valid token
+  if (checkValidToken(token)) {
+    throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
+  }
+
+  // converts the token string into the token object
+  const tempToken = JSON.parse(decodeURIComponent(token));
+
+  // Retrieves the names of the quizzes and respective quizIds
+  const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  // compares the session number with the unhashed version
+  const session = data.sessions.find((session) => session.sessionId === sessionId);
+
+  // checks if the quiz exists (NOT IN SWAGGER FOR SOME REASON) but this is to remove the ts error.
+  if (tempQuiz === undefined) {
+    throw HTTPError(403, 'Quiz does not exist');
+  }
+  // checks if the session exists (NOT IN SWAGGER FOR SOME REASON) but this is to remove the ts error.
+  if (session === undefined) {
+    throw HTTPError(400, 'Session not found');
+  }
+
+  if (session.sessionId !== sessionId) {
+    throw HTTPError(400, 'Session Id does not refer to a valid session within this quiz');
+  }
+
+  if (tempQuiz.userId !== tempToken.userId) {
+    throw HTTPError(403, 'Valid token is provided, but user is not authorised to view this session');
+  }
+
+  const quizMetadata = data.quizzes.find((quiz) => quiz.quizId === session.metadata.quizId);
+  // checks if the metadata exists (NOT IN SWAGGER FOR SOME REASON) but this is to remove the ts error.
+  if (quizMetadata === undefined) {
+    throw HTTPError(400, 'no metadata');
+  }
+
+  // Checks whether the state is final results
+  if ( session.state !== 'FINAL_RESULTS' ) {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state')
+  }
+  // Mapping a new array containing the names of the players
+  const playerNames = session.players.map((player) => player.name);
+
+  // Get the players for the session
+  const playersForSession = session.players;
+
+  // Helper function to sort players by score in descending order
+  const getPlayersRankedByScore = (): player[] => {
+    return playersForSession.sort((a, b) => b.score - a.score);
+  };
+
+  // Creates a constant with the rankedplayers part of the data.
+  const rankedPlayers = getPlayersRankedByScore();
+
+  const currentQuestionIndex = 0;
+  const currentQuestion = quizMetadata.questions[currentQuestionIndex];
+  // Create an array to store the question results.
+  const questionResults: any[] = []; 
+
+  // Loops through the questions and finds the needed data.
+  for (const currentQuestion of quizMetadata.questions) {
+    const playersForQuestion = session.players.filter((p) => p.correctQuestionsList.includes(currentQuestion.questionId));
+    const totalAnswerTime = playersForQuestion.reduce((sum, p) => sum + p.correctQuestionsList.indexOf(currentQuestion.questionId), 0);
+    const averageAnswerTime = totalAnswerTime / playersForQuestion.length;
+    const percentCorrect = (playersForQuestion.length / session.players.length) * 100;
+
+    // Push results for the current question to the array
+    questionResults.push({
+      questionId: currentQuestion.questionId,
+      playersCorrectList: playersForQuestion.map((p) => p.name),
+      averageAnswerTime,
+      percentCorrect,
+    });
+  }
+
+  // combines both questionResult and rankedPlayers into the format of QuizGetResultsReturn
+  const result: QuizGetResultsReturn = {
+    usersRankedByScore: rankedPlayers.map((p) => ({ name: p.name, score: p.score })),
+    questionResults
+  };
+  console.log('Users Ranked By Score:', JSON.stringify(result.usersRankedByScore, null, 2));
+  console.log('Question Results:', JSON.stringify(result.questionResults, null, 2));
+  // returns the session results in the correct format
+  return { result };
+}
+
 /// //////////////////////// Helper Functions ///////////////////////////////////
 
 function checkValidToken(token: string): boolean {
@@ -406,32 +515,91 @@ function countdown(currentSession: session) {
 //   }
 // }
 
-// const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
-// const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
-// const Question1 =
-//     {
-//       question: 'Sample Question 1',
-//       duration: 5,
-//       points: 4,
-//       answers: [
-//         {
-//           answer: 'Prince Wales',
-//           correct: true
-//         },
-//         {
-//           answer: 'Prince Charles',
-//           correct: true
-//         },
-//         {
-//           answer: 'Prince Diana',
-//           correct: true
-//         }
-//       ],
-//       thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
-//     };
-// adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
-
-// // Create 10 sessions that are not in END state
+const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+const Question1 =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true
+        }
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+const Question2 =
+{
+  question: 'Sample Question 2',
+  duration: 3,
+  points: 2,
+  answers: [
+    {
+      answer: 'Yes',
+      correct: true
+    },
+    {
+      answer: 'No',
+      correct: false
+    }
+  ],
+  thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+};
+const Question3 =
+{
+  question: 'Sample Question 3',
+  duration: 6,
+  points: 1,
+  answers: [
+    {
+      answer: 'asdfasdfs',
+      correct: true
+    },
+    {
+      answer: 'sdfgsdfg',
+      correct: false
+    }
+  ],
+  thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+};
+const newQuestion = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+const newQuestion2 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question2);
+const newQuestion3 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question3);
+const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
+const Player1 = playerJoin(Session1.sessionId, 'Shervin');
+const Player2 = playerJoin(Session1.sessionId, 'Jonathan');
+// console.log(getData())
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+console.log(playerAnswerSubmission(Player2.playerId, 1, [1,2]))
+console.log(playerAnswerSubmission(Player1.playerId, 1, [2,3]))
+// console.log(getData().sessions)
+console.log(getData().sessions)
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+console.log(getData().sessions)
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+console.log(getData().sessions)
+console.log(playerAnswerSubmission(Player2.playerId, 2, [1]))
+console.log(playerAnswerSubmission(Player1.playerId, 2, [2]))
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+console.log(getData().sessions)
+adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_FINAL_RESULTS');
+console.log(getData().sessions)
+// adminQuizGetSession(User1.token, Session1.sessionId, Quiz1.quizId)
+console.log(adminQuizGetResults(User1.token, Session1.sessionId, Quiz1.quizId))
+console.log(getData().sessions)
+// /// Create 10 sessions that are not in END state
 // const session1 = adminSessionStart(User1.token, Quiz1.quizId, 1)
 // const session2 = adminSessionStart(User1.token, Quiz1.quizId, 2)
 // const session3 = adminSessionStart(User1.token, Quiz1.quizId, 3)

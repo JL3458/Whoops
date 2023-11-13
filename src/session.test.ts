@@ -90,6 +90,7 @@ export function adminQuizGetSessionRequest(token: string, sessionid: number, qui
   return requestHelper('GET', `/v1/admin/quiz/${quizid}/session/${sessionid}`, {}, { token });
 }
 
+// write request and tests 
 /// ////////////////////////// Main Tests /////////////////////////////
 
 beforeEach(() => {
