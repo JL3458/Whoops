@@ -1,6 +1,6 @@
 import { getData, setData, States } from './dataStore';
 import { checkValidToken } from './quiz';
-import request from 'sync-request-curl';
+// import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
 
 /// ///////////////// Function Return Interfaces ///////////////////
@@ -40,7 +40,11 @@ function generateRandomColorName() {
 }
 
 function isValidImageFileType(fileType: string): boolean {
-  return ['jpg', 'png'].includes(fileType.toLowerCase());
+  const validExtensions = ['jpg', 'jpeg', 'png'];
+  if (!validExtensions.some((extensions) => fileType.toLowerCase().endsWith(extensions))) {
+    return false;
+  }
+  return true;
 }
 
 /// //////////////////// Main Functions ///////////////////////////
@@ -114,7 +118,17 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
     throw HTTPError(400, 'The thumbnailUrl is not an empty string');
   }
 
+  if (!isValidImageFileType(question.thumbnailUrl)) {
+    throw HTTPError(400, 'The thumbnailUrl should end in JPG, JPEG or PNG file');
+  }
+
+  if (!question.thumbnailUrl.toLowerCase().startsWith('http://') &&
+  !question.thumbnailUrl.toLowerCase().startsWith('https://')) {
+    throw HTTPError(400, 'The thumbnailUrl does not begin with "http://" or "https://"');
+  }
+
   // Check if the thumbnailUrl when fetched does not return a valid file - PNG/JPG
+  /*
   try {
     const response = request('GET', question.thumbnailUrl);
     if (response.statusCode === 200) {
@@ -134,6 +148,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
       throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
     }
   }
+  */
 
   interface answerDescription extends answer {
     answerId: string,

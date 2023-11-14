@@ -1,5 +1,6 @@
 import { getData, setData, States } from './dataStore';
 import HTTPError from 'http-errors';
+import { countdown } from './session';
 // import { adminAuthRegister } from './auth';
 // import { adminQuizCreate } from './quiz';
 // import { adminQuizCreateQuestion } from './question';
@@ -95,6 +96,12 @@ export function playerJoin(sessionId: number, name: string): playerJoinReturn | 
     };
 
   tempSession.players.push(tempPlayer);
+
+  // If number of players equal autoStartNum, then begin countdown!
+  if (tempSession.players.length === tempSession.autoStartNum) {
+    countdown(tempSession);
+  }
+
   setData(data);
   return {
     playerId: tempPlayer.playerId
