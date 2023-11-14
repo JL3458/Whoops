@@ -377,7 +377,7 @@ function checkValidAction(currentState: string, action: string) {
 }
 
 // Starts countdown for question
-function countdown(currentSession: session) {
+export function countdown(currentSession: session) {
   ++currentSession.atQuestion;
 
   currentSession.state = States.QUESTION_COUNTDOWN;

@@ -631,15 +631,15 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: false
             }
           ],
-          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675.jpg'
+          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675.svg'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });
 
-  test('Test For Invalid Thumbnail String - Not a Jpeg', () => {
+  test('Test For Invalid Thumbnail String - Doesnt start with https', () => {
     const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
     const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
-    const newQuestion =
+    let newQuestion =
         {
           question: 'Sample Question 1',
           duration: 5,
@@ -658,7 +658,29 @@ describe('Tests of adminQuizCreateQuestion', () => {
               correct: false
             }
           ],
-          thumbnailUrl: 'https://edstem.org/au/courses/13837/discussion/1687213'
+          thumbnailUrl: 'htt://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675.jpeg'
+        };
+    expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
+    newQuestion =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: false
+            },
+            {
+              answer: 'Prince Charles',
+              correct: false
+            },
+            {
+              answer: 'Prince Diana',
+              correct: false
+            }
+          ],
+          thumbnailUrl: 'www.dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675.jpeg'
         };
     expect(() => adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion)).toThrow(HTTPError[400]);
   });

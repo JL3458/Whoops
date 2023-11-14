@@ -1,5 +1,5 @@
 import { getData, setData, question, States } from './dataStore';
-import request from 'sync-request-curl';
+// import request from 'sync-request-curl';
 import HTTPError from 'http-errors';
 // import {adminAuthRegister} from './auth'
 // import {adminSessionStart} from './session'
@@ -80,7 +80,11 @@ export function checkValidToken(token: string): boolean {
 }
 
 function isValidImageFileType(fileType: string): boolean {
-  return ['jpg', 'png'].includes(fileType.toLowerCase());
+  const validExtensions = ['jpg', 'jpeg', 'png'];
+  if (!validExtensions.some((extensions) => fileType.toLowerCase().endsWith(extensions))) {
+    return false;
+  }
+  return true;
 }
 
 /// /////////////////////// Main Functions ///////////////////////////////////
@@ -500,7 +504,21 @@ export function adminQuizThumbnailUpdate(token: string, quizId: number, imgUrl: 
     throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
   }
 
+  if (imgUrl === '') {
+    throw HTTPError(400, 'The thumbnailUrl is not an empty string');
+  }
+
+  if (!isValidImageFileType(imgUrl)) {
+    throw HTTPError(400, 'The thumbnailUrl should end in JPG, JPEG or PNG file');
+  }
+
+  if (!imgUrl.toLowerCase().startsWith('http://') &&
+  !imgUrl.toLowerCase().startsWith('https://')) {
+    throw HTTPError(400, 'The thumbnailUrl does not begin with "http://" or "https://"');
+  }
+
   // Check if the imgUrl when fetched does not return a valid file - PNG/JPG
+  /*
   try {
     const response = request('GET', imgUrl);
     if (response.statusCode === 200) {
@@ -520,6 +538,7 @@ export function adminQuizThumbnailUpdate(token: string, quizId: number, imgUrl: 
       throw HTTPError(400, 'imgUrl, when fetched does not return a valid file');
     }
   }
+  */
 
   tempQuiz.thumbnailUrl = imgUrl;
   setData(data);
@@ -591,33 +610,31 @@ console.log(getData().sessions[0].players);
 // console.log(adminQuizThumbnailUpdate(User1.token, quiz1.quizId, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'));
 // console.log(adminQuizInfo(User1.token, quiz1.quizId));
 
-/*
-const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
-const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
-const Question1 =
-    {
-      question: 'Sample Question 1',
-      duration: 5,
-      points: 4,
-      answers: [
-        {
-          answer: 'Prince Wales',
-          correct: true
-        },
-        {
-          answer: 'Prince Charles',
-          correct: true
-        },
-        {
-          answer: 'Prince Diana',
-          correct: true
-        }
-      ],
-      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
-    };
-adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
-const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
-console.log(playerJoin(Session1.sessionId, 'Hayden'));
-console.log(playerStatus(1));
-console.log(getData());
-*/
+// const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+// const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+// const Question1 =
+//     {
+//       question: 'Sample Question 1',
+//       duration: 5,
+//       points: 4,
+//       answers: [
+//         {
+//           answer: 'Prince Wales',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Charles',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Diana',
+//           correct: true
+//         }
+//       ],
+//       thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+//     };
+// adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+// const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
+// console.log(playerJoin(Session1.sessionId, 'Hayden'));
+// console.log(playerStatus(1));
+// console.log(getData());
