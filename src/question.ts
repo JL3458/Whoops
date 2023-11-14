@@ -72,7 +72,7 @@ export function adminQuizCreateQuestion (token: string, quizId: number, question
 
   // Checks if Question string is valid
   if (question.question.length < 5 || question.question.length > 50) {
-    throw HTTPError(400, 'Question string should be between 3 and 30 characters');
+    throw HTTPError(400, 'Question string should be between 5 and 30 characters');
   }
 
   // Checks if the question has between 2 to 6 answers
@@ -188,74 +188,94 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   // If Token is an empty string
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
-    return { error: 'Token is empty or invalid' };
+    throw HTTPError(401, 'Token is empty or invalid');
   }
   // converts the token string into the token object
   const tempToken = JSON.parse(decodeURIComponent(token));
 
   // Checks if quizId refers to a valid quiz
   const tempQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  if (tempQuiz === undefined) {
-    return { error: 'quizId is not of a valid quiz' };
-  }
-
-  // Checks if the quiz belongs to the current logged-in user
-  if (tempQuiz.userId !== tempToken.userId) {
-    return { error: 'Valid token is provided, but user is not an owner of this quiz' };
-  }
 
   // Find the question in the quiz by questionId
   const existingQuestion = tempQuiz.questions.find((ques) => ques.questionId === questionId);
 
+  // Checks if the quiz belongs to the current logged in user
+  if (tempQuiz !== undefined && tempQuiz.userId !== tempToken.userId) {
+    throw HTTPError(403, 'Valid token is provided, but user is not an owner of this quiz');
+  }
+
   // Check if the question with the specified questionId exists
   if (existingQuestion === undefined) {
-    return { error: 'Specified questionId does not exist in this quiz' };
+    throw HTTPError(400,'Specified questionId does not exist in this quiz');
   }
   // Checks if the question has between 2 to 6 answers
   if (updatedQuestion.answers.length < 2 || updatedQuestion.answers.length > 6) {
-    return { error: 'The updatedQuestion should have between 2 to 6 answers' };
+    throw HTTPError(400,'The updatedQuestion should have between 2 to 6 answers');
   }
 
   // Checks if updatedQuestion.duration is positive
-  if (updatedQuestion.duration < 0) {
-    return { error: 'Question duration must be a positive number' };
+  if (updatedQuestion.duration <= 0) {
+    throw HTTPError(400,'Question duration must be a positive number');
   }
 
   // Checks if total duration of all questions are above 3 minutes
   const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
   if ((totalQuestionDuration + updatedQuestion.duration) > 180) {
-    return { error: 'The sum of the question durations in the quiz exceeds 3 minutes' };
+    throw HTTPError(400,'The sum of the question durations in the quiz exceeds 3 minutes');
   }
 
   // Checks if question points are valid
   if (updatedQuestion.points < 1 || updatedQuestion.points > 10) {
-    return { error: 'The points awarded for the question should be between 1 and 10' };
+    throw HTTPError(400,'The points awarded for the question should be between 1 and 10');
   }
 
   // Check if Answer Length is Invalid
   const invalidAnswer = updatedQuestion.answers.find((answer) => answer.answer.length < 1 || answer.answer.length > 30);
   if (invalidAnswer !== undefined) {
-    return { error: 'Answer length should be between 1 and 30 characters' };
+    throw HTTPError(400,'Answer length should be between 1 and 30 characters');
   }
 
   // Check if answer titles contain a duplicate
   const answers = updatedQuestion.answers.map(answer => answer.answer);
   if (answers.some((title, index) => answers.indexOf(title) !== index)) {
-    return { error: 'Answers should not contain duplicates' };
+    throw HTTPError(400,'Answers should not contain duplicates');
   }
 
   // Checks if there are no correct answers
   const correctAnswer = updatedQuestion.answers.find((answer) => answer.correct === true);
   if (correctAnswer === undefined) {
-    return { error: 'There are no correct answers' };
+    throw HTTPError(400,'There are no correct answers');
   }
 
   // Perform your validation for the updated updatedQuestion here
   if (updatedQuestion.question.length < 5 || updatedQuestion.question.length > 50) {
-    return { error: 'Question string should be between 5 and 50 characters' };
+    throw HTTPError(400,'Question string should be between 5 and 50 characters');
   }
 
-  // Check other conditions for the updated question as needed
+  if (updatedQuestion.thumbnailUrl === '') {
+    throw HTTPError(400, 'The thumbnailUrl is not an empty string');
+  }
+
+  // Check if the thumbnailUrl when fetched does not return a valid file - PNG/JPG
+  try {
+    const response = request('GET', updatedQuestion.thumbnailUrl);
+    if (response.statusCode === 200) {
+      const contentType = response.headers['content-type'];
+      const fileExtension = contentType.split('/')[1];
+
+      if (!isValidImageFileType(fileExtension)) {
+        throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
+      }
+    } else {
+      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
+    }
+  } catch (error) {
+    if (error.message.includes('The thumbnailUrl should be a JPG or PNG file')) {
+      throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
+    } else {
+      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
+    }
+  }
 
   // Update the existing question with the new data
   existingQuestion.question = updatedQuestion.question;
