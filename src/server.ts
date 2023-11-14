@@ -34,7 +34,7 @@ import {
 import { adminQuizCreateQuestion, adminQuizQuestionDelete, adminQuizQuestionUpdate, adminQuizQuestionMove, adminQuizQuestionDuplicate } from './question';
 import { setData, getData } from './dataStore';
 
-import { adminQuizGetSession, adminSessionStart, adminUpdateSessionState, adminViewSessions } from './session';
+import { adminQuizGetSession, adminSessionStart, adminUpdateSessionState, adminViewSessions, adminQuizGetResults } from './session';
 import { playerJoin, playerStatus, playerCurrentQuestionInfo, playerAnswerSubmission, playerQuestionResult } from './player';
 
 // Set up web app
@@ -399,6 +399,18 @@ app.get('/v1/admin/quiz/:quizid/session/:sessionid', (req: Request, res: Respons
   const token = req.headers.token as string;
 
   const response = adminQuizGetSession(token, sessionId, quizId);
+
+  saveDataStore();
+  res.json(response);
+});
+
+// adminGetResults
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizid);
+  const sessionId = parseInt(req.params.sessionid);
+  const token = req.headers.token as string;
+
+  const response = adminQuizGetResults(token, sessionId, quizId);
 
   saveDataStore();
   res.json(response);

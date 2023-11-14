@@ -849,12 +849,25 @@ describe('Tests of adminQuizThumbnailUpdate', () => {
     expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId + 1, 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png')).toThrow(HTTPError[400]);
   });
 
+  test('imgUrl is undefined', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, '')).toThrow(HTTPError[400]);
+  });
+
   test('imgUrl when fetch is not a JPG or PNG image', () => {
     const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
     const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
-    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29.jpeg')).toThrow(HTTPError[400]);
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29.svg')).toThrow(HTTPError[400]);
     expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://www.adobe.com/au/creativecloud/file-types/image/raster/png-file.html')).toThrow(HTTPError[400]);
     expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'https://files.eric.ed.gov/fulltext/ED252173.pdf')).toThrow(HTTPError[400]);
+  });
+
+  test('imgUrl when fetch is not a https, http', () => {
+    const User1 = authRegisterRequest('Validemail@gmail.com', 'password123', 'Lando', 'Norris');
+    const quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'htt://upload.wikimedia.org/wikipedia/commons/e/e0/Apollo_17_Image_Of_Earth_From_Space_%28cropped%29.svg')).toThrow(HTTPError[400]);
+    expect(() => adminQuizThumbnailUpdateRequest(User1.token, quiz1.quizId, 'www.adobe.com/au/creativecloud/file-types/image/raster/png-file.html')).toThrow(HTTPError[400]);
   });
 
   test('imgUrl when fetched does not return a valid file', () => {

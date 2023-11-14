@@ -1,9 +1,10 @@
 import { getData, setData, States, player, metadata, session } from './dataStore';
 import HTTPError from 'http-errors';
-import {adminAuthRegister} from './auth'
-import {playerJoin, playerStatus, playerAnswerSubmission} from './player'
-import {adminQuizCreateQuestion} from './question'
-import {adminQuizCreate} from './quiz'
+// for testing
+// import { adminAuthRegister } from './auth';
+// import { playerJoin, playerStatus, playerAnswerSubmission } from './player';
+// import { adminQuizCreateQuestion } from './question';
+// import { adminQuizCreate } from './quiz';
 /// ////////////////////////  Interface definitions ///////////////////////////////////
 
 interface SessionStartReturn {
@@ -31,21 +32,16 @@ export interface scheduledCountdown {
   currentCountdown: ReturnType<typeof setTimeout>
 }
 
+interface QuestionResult {
+  questionId: number;
+  playersCorrectList: string[];
+  averageAnswerTime: number;
+  percentCorrect: number;
+}
+
 export interface QuizGetResultsReturn {
-  usersRankedByScore: [
-    {
-      name: string,
-      score: number,
-    }
-  ],
-  questionResults: [
-    {
-      questionId: number,
-      playersCorrectList: string[],
-      averageAnswerTime: number,
-      percentCorrect: number,
-    }
-  ]
+  usersRankedByScore: { name: string; score: number; }[];
+  questionResults: QuestionResult[];
 }
 
 // Global array to store all the Timeout Objects
@@ -321,6 +317,7 @@ export function adminQuizGetSession(token: string, sessionId: number, quizId: nu
 
 export function adminQuizGetResults(token: string, sessionId: number, quizId: number): QuizGetResultsReturn | ErrorReturn {
   const data = getData();
+
   // Calling helper function which tests for valid token
   if (checkValidToken(token)) {
     throw HTTPError(401, 'Token is empty or invalid (does not refer to valid logged in user session)');
@@ -359,11 +356,11 @@ export function adminQuizGetResults(token: string, sessionId: number, quizId: nu
   }
 
   // Checks whether the state is final results
-  if ( session.state !== 'FINAL_RESULTS' ) {
-    throw HTTPError(400, 'Session is not in FINAL_RESULTS state')
+  if (session.state !== 'FINAL_RESULTS') {
+    throw HTTPError(400, 'Session is not in FINAL_RESULTS state');
   }
-  // Mapping a new array containing the names of the players
-  const playerNames = session.players.map((player) => player.name);
+  // // Mapping a new array containing the names of the players
+  // const playerNames = session.players.map((player) => player.name);
 
   // Get the players for the session
   const playersForSession = session.players;
@@ -376,10 +373,8 @@ export function adminQuizGetResults(token: string, sessionId: number, quizId: nu
   // Creates a constant with the rankedplayers part of the data.
   const rankedPlayers = getPlayersRankedByScore();
 
-  const currentQuestionIndex = 0;
-  const currentQuestion = quizMetadata.questions[currentQuestionIndex];
   // Create an array to store the question results.
-  const questionResults: any[] = []; 
+  const questionResults: QuestionResult[] = [];
 
   // Loops through the questions and finds the needed data.
   for (const currentQuestion of quizMetadata.questions) {
@@ -400,12 +395,11 @@ export function adminQuizGetResults(token: string, sessionId: number, quizId: nu
   // combines both questionResult and rankedPlayers into the format of QuizGetResultsReturn
   const result: QuizGetResultsReturn = {
     usersRankedByScore: rankedPlayers.map((p) => ({ name: p.name, score: p.score })),
-    questionResults
+    questionResults: questionResults,
   };
-  console.log('Users Ranked By Score:', JSON.stringify(result.usersRankedByScore, null, 2));
-  console.log('Question Results:', JSON.stringify(result.questionResults, null, 2));
+
   // returns the session results in the correct format
-  return { result };
+  return result;
 }
 
 /// //////////////////////// Helper Functions ///////////////////////////////////
@@ -486,7 +480,7 @@ function checkValidAction(currentState: string, action: string) {
 }
 
 // Starts countdown for question
-function countdown(currentSession: session) {
+export function countdown(currentSession: session) {
   ++currentSession.atQuestion;
 
   currentSession.state = States.QUESTION_COUNTDOWN;
@@ -515,90 +509,93 @@ function countdown(currentSession: session) {
 //   }
 // }
 
-const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
-const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
-const Question1 =
-    {
-      question: 'Sample Question 1',
-      duration: 5,
-      points: 4,
-      answers: [
-        {
-          answer: 'Prince Wales',
-          correct: true
-        },
-        {
-          answer: 'Prince Charles',
-          correct: true
-        },
-        {
-          answer: 'Prince Diana',
-          correct: true
-        }
-      ],
-      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
-    };
-const Question2 =
-{
-  question: 'Sample Question 2',
-  duration: 3,
-  points: 2,
-  answers: [
-    {
-      answer: 'Yes',
-      correct: true
-    },
-    {
-      answer: 'No',
-      correct: false
-    }
-  ],
-  thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
-};
-const Question3 =
-{
-  question: 'Sample Question 3',
-  duration: 6,
-  points: 1,
-  answers: [
-    {
-      answer: 'asdfasdfs',
-      correct: true
-    },
-    {
-      answer: 'sdfgsdfg',
-      correct: false
-    }
-  ],
-  thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
-};
-const newQuestion = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
-const newQuestion2 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question2);
-const newQuestion3 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question3);
-const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 1);
-const Player1 = playerJoin(Session1.sessionId, 'Shervin');
-const Player2 = playerJoin(Session1.sessionId, 'Jonathan');
-// console.log(getData())
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
-console.log(playerAnswerSubmission(Player2.playerId, 1, [1,2]))
-console.log(playerAnswerSubmission(Player1.playerId, 1, [2,3]))
+///////////////////////////////////////////////////////////// for testing ///////////////////////////////////////////////////////////
+// const User1 = adminAuthRegister('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
+// const Quiz1 = adminQuizCreate(User1.token, 'Test Quiz 1', 'This is a test');
+// const Question1 =
+//     {
+//       question: 'Sample Question 1',
+//       duration: 5,
+//       points: 4,
+//       answers: [
+//         {
+//           answer: 'Prince Wales',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Charles',
+//           correct: true
+//         },
+//         {
+//           answer: 'Prince Diana',
+//           correct: true
+//         }
+//       ],
+//       thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+//     };
+// const Question2 =
+// {
+//   question: 'Sample Question 2',
+//   duration: 3,
+//   points: 2,
+//   answers: [
+//     {
+//       answer: 'Yes',
+//       correct: true
+//     },
+//     {
+//       answer: 'No',
+//       correct: false
+//     }
+//   ],
+//   thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+// };
+// const Question3 =
+// {
+//   question: 'Sample Question 3',
+//   duration: 6,
+//   points: 1,
+//   answers: [
+//     {
+//       answer: 'asdfasdfs',
+//       correct: true
+//     },
+//     {
+//       answer: 'sdfgsdfg',
+//       correct: false
+//     }
+//   ],
+//   thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+// };
+// const newQuestion = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question1);
+// const newQuestion2 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question2);
+// const newQuestion3 = adminQuizCreateQuestion(User1.token, Quiz1.quizId, Question3);
+// const Session1 = adminSessionStart(User1.token, Quiz1.quizId, 0);
 // console.log(getData().sessions)
-console.log(getData().sessions)
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
-console.log(getData().sessions)
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
-console.log(getData().sessions)
-console.log(playerAnswerSubmission(Player2.playerId, 2, [1]))
-console.log(playerAnswerSubmission(Player1.playerId, 2, [2]))
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
-console.log(getData().sessions)
-adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_FINAL_RESULTS');
-console.log(getData().sessions)
-// adminQuizGetSession(User1.token, Session1.sessionId, Quiz1.quizId)
-console.log(adminQuizGetResults(User1.token, Session1.sessionId, Quiz1.quizId))
-console.log(getData().sessions)
+// const Player1 = playerJoin(Session1.sessionId, 'Shervin');
+// console.log(getData().sessions)
+// const Player2 = playerJoin(Session1.sessionId, 'Jonathan');
+// console.log(getData())
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+// console.log(playerAnswerSubmission(Player2.playerId, 1, [1,2]))
+// console.log(playerAnswerSubmission(Player1.playerId, 1, [2,3]))
+// // console.log(getData().sessions)
+// console.log(getData().sessions)
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+// console.log(getData().sessions)
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
+// console.log(getData().sessions)
+// console.log(playerAnswerSubmission(Player2.playerId, 2, [1]))
+// console.log(playerAnswerSubmission(Player1.playerId, 2, [2]))
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_ANSWER');
+// console.log(getData().sessions)
+// adminUpdateSessionState(User1.token, Quiz1.quizId, Session1.sessionId, 'GO_TO_FINAL_RESULTS');
+// console.log(getData().sessions)
+// // adminQuizGetSession(User1.token, Session1.sessionId, Quiz1.quizId)
+// console.log(adminQuizGetResults(User1.token, Session1.sessionId, Quiz1.quizId))
+// console.log(getData().sessions)
 // /// Create 10 sessions that are not in END state
 // const session1 = adminSessionStart(User1.token, Quiz1.quizId, 1)
 // const session2 = adminSessionStart(User1.token, Quiz1.quizId, 2)

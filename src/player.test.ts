@@ -106,7 +106,35 @@ describe('Tests for playerJoin', () => {
     clearRequest();
   });
 
-  // TODO:  throw HTTPError(401, 'Session is not in LOBBY state');
+  test('Session is not in LOBBY state', () => {
+    const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Shervin', 'Erfanian');
+    const Quiz1 = adminQuizCreateRequest(User1.token, 'Test Quiz 1', 'This is a test');
+    const Question1 =
+            {
+              question: 'Sample Question 1',
+              duration: 5,
+              points: 4,
+              answers: [
+                {
+                  answer: 'Prince Wales',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Charles',
+                  correct: true
+                },
+                {
+                  answer: 'Prince Diana',
+                  correct: true
+                }
+              ],
+              thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+            };
+    adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
+    adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
+    expect(() => playerJoinRequest(Session1.sessionId, 'Divakar')).toThrow(HTTPError[400]);
+  });
 
   test('Session is invalid', () => {
     const User1 = authRegisterRequest('landonorris@gmail.com', 'validpassword12', 'Kyrie', 'Irving');
@@ -133,7 +161,7 @@ describe('Tests for playerJoin', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     expect(() => playerJoinRequest(Session1.sessionId + 1, 'Hayden')).toThrow(HTTPError[400]);
   });
 
@@ -162,7 +190,7 @@ describe('Tests for playerJoin', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     expect(playerJoinRequest(Session1.sessionId, 'Hayden')).toEqual({ playerId: expect.any(Number) });
     expect(() => playerJoinRequest(Session1.sessionId, 'Hayden')).toThrow(HTTPError[400]);
   });
@@ -192,7 +220,7 @@ describe('Tests for playerJoin', () => {
             thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
           };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     expect(playerJoinRequest(Session1.sessionId, '')).toEqual({ playerId: expect.any(Number) });
   });
 
@@ -221,7 +249,7 @@ describe('Tests for playerJoin', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     expect(playerJoinRequest(Session1.sessionId, 'Hayden')).toEqual({ playerId: expect.any(Number) });
   });
 });
@@ -252,7 +280,7 @@ describe('Tests for playerStatus', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const playerId1 = playerJoinRequest(Session1.sessionId, 'Hayden');
     expect(() => playerStatusRequest(playerId1.playerId + 1)).toThrow(HTTPError[400]);
   });
@@ -283,7 +311,7 @@ describe('Tests for playerStatus', () => {
             };
 
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const playerId1 = playerJoinRequest(Session1.sessionId, 'Hayden');
     expect(playerStatusRequest(playerId1.playerId)).toEqual({ state: 'LOBBY', numQuestions: 1, atQuestion: 0 });
   });
@@ -319,7 +347,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -358,7 +386,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -390,7 +418,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -423,7 +451,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -455,7 +483,7 @@ describe('Tests for playerCurrentQuestionInfo', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     expect(() => playerCurrentQuestionInfoRequest(Player1.playerId, 1)).toThrow(HTTPError[400]);
   });
@@ -491,7 +519,7 @@ describe('Tests for playerAnswerSubmission', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -523,7 +551,7 @@ describe('Tests for playerAnswerSubmission', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -555,7 +583,7 @@ describe('Tests for playerAnswerSubmission', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -587,7 +615,7 @@ describe('Tests for playerAnswerSubmission', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     expect(() => playerAnswerSubmissionRequest(Player1.playerId, 2, [2])).toThrow(HTTPError[400]);
   });
@@ -618,7 +646,7 @@ describe('Tests for playerAnswerSubmission', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -651,7 +679,7 @@ describe('Tests for playerAnswerSubmission', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -684,7 +712,7 @@ describe('Tests for playerAnswerSubmission', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -717,7 +745,7 @@ describe('Tests for playerAnswerSubmission', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -755,7 +783,7 @@ describe('Tests for playerQuestionResult', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -794,7 +822,7 @@ describe('Tests for playerQuestionResult', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -828,7 +856,7 @@ describe('Tests for playerQuestionResult', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -862,7 +890,7 @@ describe('Tests for playerQuestionResult', () => {
               thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
@@ -896,7 +924,7 @@ describe('Tests for playerQuestionResult', () => {
             };
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
-    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 1);
+    const Session1 = adminSessionStartRequest(User1.token, Quiz1.quizId, 0);
     const Player1 = playerJoinRequest(Session1.sessionId, 'Shervin');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'NEXT_QUESTION');
     adminUpdateSessionStateRequest(User1.token, Quiz1.quizId, Session1.sessionId, 'SKIP_COUNTDOWN');
