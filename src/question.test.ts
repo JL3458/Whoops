@@ -91,6 +91,10 @@ export function adminQuizQuestionDeleteRequest(token: string, quizid: number, qu
   return requestHelper('DELETE', `/v2/admin/quiz/${quizid}/question/${questionid}`, { }, { token });
 }
 
+export function adminQuizQuestionUpdateRequest(token: string, quizid: number, questionId: number, questionBody: questionBody) {
+  return requestHelper('PUT', `/v2/admin/quiz/${quizid}/question/${questionId}`, { questionBody }, { token });
+}
+
 /// ////////////////////////// Main Tests /////////////////////////////
 
 describe('Tests of adminQuizCreateQuestion', () => {
@@ -1745,5 +1749,854 @@ describe('Tests of adminQuizQuestionDelete', () => {
     const question1 = adminQuizCreateQuestionRequest(User1.token, Quiz1.quizId, Question1);
     expect(adminSessionStartRequest(User1.token, Quiz1.quizId, 1)).toEqual({ sessionId: expect.any(Number) });
     expect(() => adminQuizQuestionDeleteRequest(User1.token, Quiz1.quizId, question1.questionId)).toThrow(HTTPError[400]);
+  });
+});
+describe('Tests of adminQuizUpdateQuestion', () => {
+  beforeEach(() => {
+    clearRequest();
+  });
+
+  test('Token is Empty or Invalid', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    expect(() => adminQuizQuestionUpdateRequest('', newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[401]);
+  });
+
+  test('Test For Invalid Question String', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample test',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    newQuestion =
+        {
+          question: 'four',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Number of Answers in Question', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+    {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true
+        },
+        {
+          answer: 'King Charles',
+          correct: false
+        }
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Raina',
+              correct: true
+            },
+            {
+              answer: 'Prince Gill',
+              correct: true
+            },
+            {
+              answer: 'Prince Kohli',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+
+    newQuestion =
+        {
+          question: 'Sample Question 1',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test for Question Duration Positive', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 1,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: -1,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 0,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Sum of duration exceeding 180 seconds/3minutes', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 90,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 100,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 0,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Invalid Points', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 1,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 0,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 11,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Invalid Answer length', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: '',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 0,
+          points: 4,
+          answers: [
+            {
+              answer: 'Exploring new frontiers broadens our horizons and enriches our lives',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Duplicate Strings', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For No Correct Answer', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: false
+            },
+            {
+              answer: 'Prince Charles',
+              correct: false
+            },
+            {
+              answer: 'Prince Diana',
+              correct: false
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Empty Thumbnail', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: ''
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Invalid Thumbnail String', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675.svg'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Test For Invalid Thumbnail String - Does not start with https', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Divakar', 'Dessai');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    let newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+        };
+    const questionId = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+
+    newQuestion =
+        {
+          question: 'Sample question',
+          duration: 5,
+          points: 4,
+          answers: [
+            {
+              answer: 'Prince Wales',
+              correct: true
+            },
+            {
+              answer: 'Prince Charles',
+              correct: true
+            },
+            {
+              answer: 'Prince Diana',
+              correct: true
+            }
+          ],
+          thumbnailUrl: 'htt://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/-1080x675'
+        };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId.questionId, newQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Attempt to Update Non-Existent Question', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+
+    // Attempt to update a non-existent question (use a non-existent questionId)
+    const nonExistentQuestionId = 12345; // Assuming this questionId doesn't exist
+    const updatedQuestion = {
+      question: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answer: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answer: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Updated Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, nonExistentQuestionId, updatedQuestion)).toThrow(HTTPError[400]);
+  });
+
+  test('Valid token is provided, but user is not an owner of this quiz', () => {
+    const newUser1 = authRegisterRequest('Validemail1@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newUser2 = authRegisterRequest('Validemail2@gmail.com', 'password123', 'Jane', 'Choi');
+    const newQuiz = adminQuizCreateRequest(newUser1.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+
+    // Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser1.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    // Attempt to update the question with an invalid token (newUser2's token)
+    const updatedQuestion = {
+      question: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answer: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answer: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Updated Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+
+    expect(() => adminQuizQuestionUpdateRequest(newUser2.token, newQuiz.quizId, questionId, updatedQuestion)).toThrow(HTTPError[403]);
+  });
+  test('Update Question Successfully', () => {
+    const newUser = authRegisterRequest('Validemail@gmail.com', 'password123', 'Shervin', 'Erfanian');
+    const newQuiz = adminQuizCreateRequest(newUser.token, 'Test Quiz 1', 'This is a test');
+    const newQuestion = {
+      question: 'Sample Question 1',
+      duration: 5,
+      points: 4,
+      answers: [
+        {
+          answer: 'Prince Wales',
+          correct: true,
+        },
+        {
+          answer: 'Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };// Create the initial question and get its ID
+    const createdQuestionResponse = adminQuizCreateQuestionRequest(newUser.token, newQuiz.quizId, newQuestion);
+    const questionId = createdQuestionResponse.questionId;
+
+    // Update the question
+    const updatedQuestion = {
+      question: 'Updated Sample Question',
+      duration: 10,
+      points: 6,
+      answers: [
+        {
+          answer: 'Updated Prince Wales',
+          correct: false,
+        },
+        {
+          answer: 'Updated Prince Charles',
+          correct: true,
+        },
+        {
+          answer: 'Updated Prince Diana',
+          correct: true,
+        },
+      ],
+      thumbnailUrl: 'https://files.softicons.com/download/folder-icons/alumin-folders-icons-by-wil-nichols/png/512x512/Downloads%202.png'
+    };
+
+    expect(adminQuizQuestionUpdateRequest(newUser.token, newQuiz.quizId, questionId, updatedQuestion)).toEqual({});
   });
 });
