@@ -206,50 +206,50 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
 
   // Check if the question with the specified questionId exists
   if (existingQuestion === undefined) {
-    throw HTTPError(400,'Specified questionId does not exist in this quiz');
+    throw HTTPError(400, 'Specified questionId does not exist in this quiz');
   }
   // Checks if the question has between 2 to 6 answers
   if (updatedQuestion.answers.length < 2 || updatedQuestion.answers.length > 6) {
-    throw HTTPError(400,'The updatedQuestion should have between 2 to 6 answers');
+    throw HTTPError(400, 'The updatedQuestion should have between 2 to 6 answers');
   }
 
   // Checks if updatedQuestion.duration is positive
   if (updatedQuestion.duration <= 0) {
-    throw HTTPError(400,'Question duration must be a positive number');
+    throw HTTPError(400, 'Question duration must be a positive number');
   }
 
   // Checks if total duration of all questions are above 3 minutes
   const totalQuestionDuration = tempQuiz.questions.reduce((sum, currQues) => sum + currQues.duration, 0);
   if ((totalQuestionDuration + updatedQuestion.duration) > 180) {
-    throw HTTPError(400,'The sum of the question durations in the quiz exceeds 3 minutes');
+    throw HTTPError(400, 'The sum of the question durations in the quiz exceeds 3 minutes');
   }
 
   // Checks if question points are valid
   if (updatedQuestion.points < 1 || updatedQuestion.points > 10) {
-    throw HTTPError(400,'The points awarded for the question should be between 1 and 10');
+    throw HTTPError(400, 'The points awarded for the question should be between 1 and 10');
   }
 
   // Check if Answer Length is Invalid
   const invalidAnswer = updatedQuestion.answers.find((answer) => answer.answer.length < 1 || answer.answer.length > 30);
   if (invalidAnswer !== undefined) {
-    throw HTTPError(400,'Answer length should be between 1 and 30 characters');
+    throw HTTPError(400, 'Answer length should be between 1 and 30 characters');
   }
 
   // Check if answer titles contain a duplicate
   const answers = updatedQuestion.answers.map(answer => answer.answer);
   if (answers.some((title, index) => answers.indexOf(title) !== index)) {
-    throw HTTPError(400,'Answers should not contain duplicates');
+    throw HTTPError(400, 'Answers should not contain duplicates');
   }
 
   // Checks if there are no correct answers
   const correctAnswer = updatedQuestion.answers.find((answer) => answer.correct === true);
   if (correctAnswer === undefined) {
-    throw HTTPError(400,'There are no correct answers');
+    throw HTTPError(400, 'There are no correct answers');
   }
 
   // Perform your validation for the updated updatedQuestion here
   if (updatedQuestion.question.length < 5 || updatedQuestion.question.length > 50) {
-    throw HTTPError(400,'Question string should be between 5 and 50 characters');
+    throw HTTPError(400, 'Question string should be between 5 and 50 characters');
   }
 
   if (updatedQuestion.thumbnailUrl === '') {
@@ -257,24 +257,13 @@ export function adminQuizQuestionUpdate(token: string, quizId: number, questionI
   }
 
   // Check if the thumbnailUrl when fetched does not return a valid file - PNG/JPG
-  try {
-    const response = request('GET', updatedQuestion.thumbnailUrl);
-    if (response.statusCode === 200) {
-      const contentType = response.headers['content-type'];
-      const fileExtension = contentType.split('/')[1];
+  if (!isValidImageFileType(updatedQuestion.thumbnailUrl)) {
+    throw HTTPError(400, 'The thumbnailUrl should end in JPG, JPEG or PNG file');
+  }
 
-      if (!isValidImageFileType(fileExtension)) {
-        throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
-      }
-    } else {
-      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
-    }
-  } catch (error) {
-    if (error.message.includes('The thumbnailUrl should be a JPG or PNG file')) {
-      throw HTTPError(400, 'The thumbnailUrl should be a JPG or PNG file');
-    } else {
-      throw HTTPError(400, 'thumbnailUrl, when fetched does not return a valid file');
-    }
+  if (!updatedQuestion.thumbnailUrl.toLowerCase().startsWith('http://') &&
+  !updatedQuestion.thumbnailUrl.toLowerCase().startsWith('https://')) {
+    throw HTTPError(400, 'The thumbnailUrl does not begin with "http://" or "https://"');
   }
 
   // Update the existing question with the new data
