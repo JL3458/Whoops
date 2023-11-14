@@ -289,22 +289,12 @@ app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
 /// ////////////////////////// question.ts ///////////////////////////////
 
 // adminQuizQuestionUpdate
-app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
   const quizId = parseInt(req.params.quizid);
   const questionId = parseInt(req.params.questionid);
-  const { token, questionBody } = req.body;
-
+  const { questionBody } = req.body;
+  const token = req.headers.token as string;
   const response = adminQuizQuestionUpdate(token, quizId, questionId, questionBody);
-
-  if (response.error) {
-    if (response.error === 'Token is empty or invalid') {
-      return res.status(401).json(response);
-    } else if (response.error === 'Valid token is provided, but user is not an owner of this quiz') {
-      return res.status(403).json(response);
-    } else if ('error' in response) {
-      return res.status(400).json(response);
-    }
-  }
   saveDataStore();
   res.json(response);
 });
